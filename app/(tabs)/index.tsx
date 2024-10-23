@@ -1,4 +1,4 @@
-import { ActivityIndicator, Image, StyleSheet, Pressable} from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Pressable, View, Text} from 'react-native';
 import React, { useEffect, createContext, useContext, useState } from 'react';
 //Themed
 import { ThemedText } from '@/components/ThemedText';
@@ -50,10 +50,7 @@ export default function HomeScreen() {
       {isPressed ? (
         !isloading ? (
           <ThemedView style={styles.top}>
-            <Image
-              source={require('@/assets/images/example-img.png')} 
-              style={styles.img}
-            />
+              <ThemedText>실시간 영상</ThemedText>
           </ThemedView>
         ):(
             <ThemedView style={styles.top}>
@@ -111,11 +108,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 20,
   },
-  img:{
-    resizeMode: "contain",
-    width: '100%', 
-    height: '100%', 
-  },
+
   play_btn:{
     alignItems:'center',
     justifyContent:'center',
