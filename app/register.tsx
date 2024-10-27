@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { View, Button, TextInput, StyleSheet} from 'react-native';
-import { useDb } from '@/app/Context/DbContext';
+import { useDb } from '@/context/DbContext';
 
 export default function RegisterScreen() {
   const { db } = useDb();

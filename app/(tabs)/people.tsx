@@ -5,7 +5,8 @@ import { ThemedView } from '@/components/ThemedView';
 import SearchBar from '@/components/SearchBar';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { useDb } from '@/app/Context/DbContext';
+import { useDb } from '@/context/DbContext';
+import Empty from '@/components/Empty';
 
 const RegisterScreen = () => {
   const { profiles } = useDb(); // DbContext에서 프로필 가져오기
@@ -13,7 +14,7 @@ const RegisterScreen = () => {
 
   // 프로필 데이터가 업데이트되면 로딩 상태를 false로 변경
   useEffect(() => {
-    if (profiles.length > 0) {
+    if (profiles.length >= 0) {
       setLoading(false);
     }
   }, [profiles]);
@@ -37,27 +38,29 @@ const RegisterScreen = () => {
           <SearchBar />
         </View>
         <ThemedView style={styles.Container}>
-          {/* 등록된 프로필 리스트 */}
-          <View>
-            {profiles.map((profile) => (
-              <View key={profile.id} style={styles.profileContainer}>
-                {profile.image ? (
-                  <Image 
-                    source={{ uri: profile.image }} 
-                    style={styles.image} 
-                  />
-                ) : (
-                  <View style={styles.defaultProfile}>
-                    <Text style={styles.defaultText}>{profile.name}</Text>
-                  </View>
-                )}
-                <Text>이름: {profile.name}</Text>
-                <Text>관계: {profile.relationship}</Text>
-                <Text>메모: {profile.memo}</Text>
-                <Text>성별: {profile.gender}</Text>
-              </View>
-            ))}
-          </View>
+          {profiles.length === 0? <Empty /> : 
+          (
+            <View>
+              {profiles.map((profile) => (
+                <View key={profile.id} style={styles.profileContainer}>
+                  {profile.image ? (
+                    <Image 
+                      source={{ uri: profile.image }} 
+                      style={styles.image} 
+                    />
+                  ) : (
+                    <View style={styles.defaultProfile}>
+                      <Text style={styles.defaultText}>{profile.name}</Text>
+                    </View>
+                  )}
+                  <Text>이름: {profile.name}</Text>
+                  <Text>관계: {profile.relationship}</Text>
+                  <Text>메모: {profile.memo}</Text>
+                  <Text>성별: {profile.gender}</Text>
+                </View>
+              ))}
+            </View>
+          )} 
         </ThemedView>
       </ScrollView>
     </LinearGradient>
