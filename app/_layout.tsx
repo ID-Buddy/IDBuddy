@@ -7,9 +7,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-
-
-
+import { DbProvider } from '@/app/Context/DbContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +16,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    Prompt: require('../assets/fonts/Prompt-Regular.ttf'),
   });
 
   useEffect(() => {
@@ -32,13 +31,19 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen 
-          name="(tabs)"
-          options={{headerShown: false}}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <DbProvider>
+        <Stack>
+            <Stack.Screen 
+              name="(tabs)"
+              options={{headerShown: false}}
+            />
+            <Stack.Screen 
+              name="register"
+              options={{}} 
+            />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </DbProvider>
     </ThemeProvider>
   );
 }

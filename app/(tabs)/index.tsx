@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/ThemedView';
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
+
 //Icon
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -32,7 +33,7 @@ export default function HomeScreen() {
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS profiles (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          image TEXT NOT NULL,
+          image TEXT,
           name TEXT NOT NULL,
           relationship TEXT NOT NULL,
           gender TEXT,
@@ -50,6 +51,19 @@ export default function HomeScreen() {
       {isPressed ? (
         !isloading ? (
           <ThemedView style={styles.top}>
+              <View style={styles.logo}>
+                <Image
+                  style={{ 
+                    width: 40, 
+                    height: 45, 
+                  }}
+                  source={require('@/assets/images/ID-B_logo.png')} // 로고 이미지 경로 설정
+                  resizeMode="contain"
+                />
+              </View>
+              <View style={styles.chat_bubble}>
+                <Text style={styles.chat}>안녕하세요, Eunjin님! </Text>
+              </View>
               <ThemedText>실시간 영상</ThemedText>
           </ThemedView>
         ):(
@@ -115,6 +129,40 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 100,
+  },
+  logo : {
+      position: 'absolute',
+      top: 50,
+      right: 15,
+      shadowColor: '#4169e1', 
+      shadowOpacity: 0.5,  // 그림자의 투명도
+      shadowRadius: 8,    // 블러 강도
+      shadowOffset: {
+        width: 0,
+        height: 4,         // 그림자의 위치
+      },
+      elevation: 10,
+    },
+  chat_bubble: {
+    position: 'absolute',
+    top: 55,
+    right: 65,
+    backgroundColor: 'lightgray',
+    padding: 8,
+    paddingLeft: 10,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    shadowColor: 'lightgray',
+    shadowOpacity: 0.5,  // 그림자의 투명도
+    shadowRadius: 5,    // 블러 강도
+    shadowOffset: {
+      width: 0,
+      height: 4,         // 그림자의 위치
+    },
+    elevation: 10,
+  },
+  chat: {
+    fontSize: 15,
   }
-
 });

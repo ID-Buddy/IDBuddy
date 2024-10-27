@@ -1,25 +1,26 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
 import { Image,View,Pressable } from 'react-native';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
-
-
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-
+  const router = useRouter();
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: true,
-        
+        headerShown: false,
+        tabBarStyle: {
+          paddingTop: 5,
+        }
       }}>
       <Tabs.Screen
-        name="register"
+        name="people"
         options={{
           title: '',
           tabBarLabel: 'People',
@@ -30,9 +31,12 @@ export default function TabLayout() {
             shadowOffset: { width: 0, height: 0 }, // 그림자 오프셋 설정
             shadowOpacity: 0, // 그림자 불투명도 설정
             shadowRadius: 0, // 그림자 반경 설정
+            
           },
           headerRight: () => (
-            <Pressable>
+            <Pressable
+              onPress={() => router.push('/register')}
+            >
                 <Ionicons name="person-add" size={24} color="white" />
             </Pressable>
           ),
@@ -47,35 +51,12 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '',
-          tabBarLabel: '',
-          headerRight: () => (
-            <View
-              style={{
-                shadowColor: '#4169e1', // 흰색 그림자
-                shadowOpacity: 0.5,  // 그림자의 투명도
-                shadowRadius: 8,    // 블러 강도
-                shadowOffset: {
-                  width: 0,
-                  height: 4,         // 그림자의 위치
-                },
-                elevation: 10,}}>
-              <Image
-                style={{ 
-                  width: 40, 
-                  height: 45, 
-                  marginRight: 10,
-                }}
-                source={require('@/assets/images/ID-B_logo.png')} // 로고 이미지 경로 설정
-                resizeMode="contain"
-              />
-            </View>
-            
-          ),
+          tabBarLabel: 'Camera',
           headerTransparent: true,
        
           tabBarActiveTintColor: '#4169e1',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} size={30}color={focused ? '#4169e1': 'lightgray'} />
+            <MaterialCommunityIcons  name={focused ? "video-wireless" :"video-wireless-outline"} size={30}color={focused ? '#4169e1': 'lightgray'} />
           ),
         }}
       />
