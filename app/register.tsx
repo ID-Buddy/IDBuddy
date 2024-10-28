@@ -2,37 +2,31 @@ import React, {useState} from 'react';
 import { View, Button, TextInput, StyleSheet} from 'react-native';
 import { useDb } from '@/context/DbContext';
 
+//type
+import { Profile } from '@/types/index';
+import { DbContextType } from '@/types/index';
+
 export default function RegisterScreen() {
-  const { db } = useDb();
-  const [newProfile, setNewProfile] = useState({
+  const { db, addProfile, deleteAllProfiles } = useDb() as DbContextType;
+  const [newProfile, setNewProfile] = useState<Profile>({
+    id: Date.now(), // id는 새로운 프로필 생성 시 고유하게 설정할 수 있음
     image: '',
     name: '',
     relationship: '',
     memo: '',
-    gender: '', // 성별 추가
+    gender: '',
   });
 
-  // 프로필 추가
-    const addProfile = async () => {
-        if (db) {
-          await db.runAsync(
-            'INSERT INTO profiles (image, name, relationship, memo, gender) VALUES (?, ?, ?, ?, ?)',
-            newProfile.image,
-            newProfile.name,
-            newProfile.relationship,
-            newProfile.memo,
-            newProfile.gender // 성별 추가
-          );
-          setNewProfile({ image: '', name: '', relationship: '', memo: '', gender: '' }); // 입력 필드 초기화
-        
-        }
-      };
-    // 모든 프로필 데이터 삭제
-    const deleteAllProfiles = async () => {
-        if (db) {
-        await db.runAsync('DELETE FROM profiles'); // 모든 프로필 데이터 삭제
-        }
-    };
+   // 프로필 추가
+   const handleAddProfile = async () => {
+    await addProfile(newProfile); // 프로필 추가
+    setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '' }); // 입력 필드 초기화
+  };
+
+  // 모든 프로필 삭제
+  const handleDeleteAllProfiles = async () => {
+    await deleteAllProfiles(); // 모든 프로필 삭제
+  };
 
   return (
     <View style ={styles.container}>
@@ -40,7 +34,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="이미지 URL"
-              value={newProfile.image}
+              value={newProfile.image  || ''}
               onChangeText={(text) => setNewProfile({ ...newProfile, image: text })}
             />
             <TextInput
@@ -67,8 +61,8 @@ export default function RegisterScreen() {
               value={newProfile.gender}
               onChangeText={(text) => setNewProfile({ ...newProfile, gender: text })}
             />
-            <Button title="프로필 추가" onPress={addProfile} />
-            <Button title="모든 프로필 삭제" onPress={deleteAllProfiles} color="red" />
+            <Button title="프로필 추가" onPress={handleAddProfile} />
+            <Button title="모든 프로필 삭제" onPress={handleDeleteAllProfiles} color="red" />
           </View>
     </View>
   );

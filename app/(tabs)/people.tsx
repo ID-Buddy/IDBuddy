@@ -7,23 +7,21 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useDb } from '@/context/DbContext';
 import Empty from '@/components/Empty';
+import ProfileItem from '@/components/ProfileItem';
 //type
-import { Profile } from '@/types/index';
 import { DbContextType } from '@/types/index';
-
+import { Profile } from '@/types/index';
 
 const RegisterScreen = () => {
-  const {profiles} = useDb() as DbContextType; // DbContext에서 프로필 가져오기
-  const profileCount = profiles?.length || 0; 
-  const [isLoading, setLoading] = useState(profiles?.length === 0); // 초기 로딩 상태
+  const { profiles } = useDb() as DbContextType; // DbContext에서 프로필 가져오기
+  const [isLoading, setLoading] = useState(true); // 초기 로딩 상태
 
-  // 프로필 데이터가 업데이트되면 로딩 상태를 false로 변경
+  // 프로필 데이터가 업데이트되면 상태를 업데이트
   useEffect(() => {
     if (profiles.length >= 0) {
-      setLoading(false);
+      setLoading(false); // 프로필이 있을 때 로딩 상태 false로 변경
     }
-  }, [profiles]);
-
+  }, [profiles]); // profiles가 변경될 때마다 실행
   if (isLoading) {
     return (
       <ThemedView style={styles.Container}>
@@ -45,23 +43,10 @@ const RegisterScreen = () => {
         <ThemedView style={styles.Container}>
           {profiles.length === 0? <Empty /> : 
           (
-            <View>
+            <View style={styles.profileContainer}>
               {profiles.map((profile) => (
-                <View key={profile.id} style={styles.profileContainer}>
-                  {profile.image ? (
-                    <Image 
-                      source={{ uri: profile.image }} 
-                      style={styles.image} 
-                    />
-                  ) : (
-                    <View style={styles.defaultProfile}>
-                      <Text style={styles.defaultText}>{profile.name}</Text>
-                    </View>
-                  )}
-                  <Text>이름: {profile.name}</Text>
-                  <Text>관계: {profile.relationship}</Text>
-                  <Text>메모: {profile.memo}</Text>
-                  <Text>성별: {profile.gender}</Text>
+                <View key={profile.id} style={{flex: 1}}>
+                   <ProfileItem id={profile.id} image={profile.image} memo={profile.memo} gender={profile.gender} name={profile.name} relationship={profile.relationship} />
                 </View>
               ))}
             </View>
@@ -101,27 +86,8 @@ const styles = StyleSheet.create({
     paddingBottom: 200,
   },
   profileContainer: {
-    marginBottom: 20,
+    flex:1,
   },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-  },
-  defaultProfile:{
-    backgroundColor: 'lightgray',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  defaultText: {
-    fontSize: 30,
-    fontWeight: 'bold',
-  }
 });
 
 export default RegisterScreen;

@@ -35,8 +35,31 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     setProfiles(result); // 프로필 상태 업데이트
   };
 
+  // 프로필 추가
+  const addProfile = async (newProfile: Profile) => {
+    if (db) {
+      await db.runAsync(
+        'INSERT INTO profiles (image, name, relationship, memo, gender) VALUES (?, ?, ?, ?, ?)',
+        newProfile.image || '', // 기본값 설정
+        newProfile.name || '', // 기본값 설정
+        newProfile.relationship || '', // 기본값 설정
+        newProfile.memo || '', // 기본값 설정
+        newProfile.gender || '' // 기본값 설정
+      );
+      fetchProfiles(db); // 프로필 추가 후 상태 업데이트
+    }
+  };
+
+  // 모든 프로필 데이터 삭제
+  const deleteAllProfiles = async () => {
+    if (db) {
+      await db.runAsync('DELETE FROM profiles'); // 모든 프로필 데이터 삭제
+      fetchProfiles(db); // 삭제 후 상태 업데이트
+    }
+  };
+
   return (
-    <DbContext.Provider value={{ db, profiles }}>
+    <DbContext.Provider value={{ db, profiles, addProfile, deleteAllProfiles }}>
       {children}
     </DbContext.Provider>
   );
