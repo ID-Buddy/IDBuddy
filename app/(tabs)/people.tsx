@@ -7,10 +7,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useDb } from '@/context/DbContext';
 import Empty from '@/components/Empty';
+//type
+import { Profile } from '@/types/index';
+import { DbContextType } from '@/types/index';
+
 
 const RegisterScreen = () => {
-  const { profiles } = useDb(); // DbContext에서 프로필 가져오기
-  const [isLoading, setLoading] = useState(profiles.length === 0); // 초기 로딩 상태
+  const {profiles} = useDb() as DbContextType; // DbContext에서 프로필 가져오기
+  const profileCount = profiles?.length || 0; 
+  const [isLoading, setLoading] = useState(profiles?.length === 0); // 초기 로딩 상태
 
   // 프로필 데이터가 업데이트되면 로딩 상태를 false로 변경
   useEffect(() => {
