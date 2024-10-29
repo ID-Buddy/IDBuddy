@@ -1,12 +1,15 @@
 import React, {useState} from 'react';
-import { View, Button, TextInput, StyleSheet} from 'react-native';
+import { Image, View, Button, TextInput, StyleSheet} from 'react-native';
 import { useDb } from '@/context/DbContext';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 
 //type
 import { Profile } from '@/types/index';
 import { DbContextType } from '@/types/index';
 
 export default function RegisterScreen() {
+  const router = useRouter();
   const { db, addProfile, deleteAllProfiles } = useDb() as DbContextType;
   const [newProfile, setNewProfile] = useState<Profile>({
     id: Date.now(), // id는 새로운 프로필 생성 시 고유하게 설정할 수 있음
@@ -21,6 +24,7 @@ export default function RegisterScreen() {
    const handleAddProfile = async () => {
     await addProfile(newProfile); // 프로필 추가
     setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '' }); // 입력 필드 초기화
+    router.push('/people');
   };
 
   // 모든 프로필 삭제
@@ -28,15 +32,31 @@ export default function RegisterScreen() {
     await deleteAllProfiles(); // 모든 프로필 삭제
   };
 
+  const [image, setImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+      setNewProfile({ ...newProfile, image: result.assets[0].uri });
+    }
+  };
+
   return (
     <View style ={styles.container}>
         <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="이미지 URL"
-              value={newProfile.image  || ''}
-              onChangeText={(text) => setNewProfile({ ...newProfile, image: text })}
-            />
+            <Button title="Pick an image from camera roll" onPress={pickImage} />
+            {image && <Image source={{ uri: image }} style={styles.image} />}
+            
             <TextInput
               style={styles.input}
               placeholder="이름"
@@ -79,5 +99,9 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
+    },
+    image: {
+      width: 200,
+      height: 200,
     },
 });
