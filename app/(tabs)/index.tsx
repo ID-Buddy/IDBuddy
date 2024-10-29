@@ -19,6 +19,7 @@ const db = SQLite.openDatabaseAsync('profiles.db');
 export default function HomeScreen() {
   const [isloading, setLoading] = useState(true);
   const [isPressed, setPressed] = useState(false); // pressed 상태 관리
+  const [imageUri, setImageUri] = useState<string | null>(null); // 실시간 스트림 이미지 URI 상태
 
   const handlePress = () => {
     setPressed(!isPressed); // pressed 상태를 토글
@@ -45,7 +46,25 @@ export default function HomeScreen() {
 
     initializeDatabase();
   }, []);
-  
+
+  // 실시간 스트림 가져오는 함수
+  useEffect(() => {
+    if (isPressed) {
+      const fetchFrame = async () => {
+        try {
+          const response = await fetch("http://<라즈베리파이_IP>:5000/video_feed");
+          const blob = await response.blob();
+          setImageUri(URL.createObjectURL(blob));
+        } catch (error) {
+          console.error("Error fetching frame:", error);
+        }
+      };
+      const intervalId = setInterval(fetchFrame, 100);  // 100ms 간격으로 이미지 갱신
+      return () => clearInterval(intervalId);
+    } else {
+      setImageUri(null);  // 버튼을 누르지 않으면 이미지 초기화
+    }
+  }, [isPressed]);
   return (
     <ThemedView style={styles.Container}>
       {isPressed ? (
@@ -64,7 +83,12 @@ export default function HomeScreen() {
               <View style={styles.chat_bubble}>
                 <Text style={styles.chat}>안녕하세요, Eunjin님! </Text>
               </View>
-              <ThemedText>실시간 영상</ThemedText>
+              {/* 실시간 영상 표시 부분 */}
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={styles.stream} />
+              ) : (
+                <ThemedText>스트리밍을 불러오는 중...</ThemedText>
+              )}
           </ThemedView>
         ):(
             <ThemedView style={styles.top}>
@@ -164,5 +188,11 @@ const styles = StyleSheet.create({
   },
   chat: {
     fontSize: 15,
-  }
+  },
+  stream: {
+    width: '90%',  // 실시간 영상 크기 조절
+    height: '70%',
+    borderRadius: 10,
+    resizeMode: 'cover',
+  },
 });
