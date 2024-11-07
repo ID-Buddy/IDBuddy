@@ -39,12 +39,13 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   const addProfile = async (newProfile: Profile) => {
     if (db) {
       await db.runAsync(
-        'INSERT INTO profiles (image, name, relationship, memo, gender) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO profiles (image, name, relationship, memo, gender,age) VALUES (?, ?, ?, ?, ?,?)',
         newProfile.image || '', // 기본값 설정
         newProfile.name || '', // 기본값 설정
         newProfile.relationship || '', // 기본값 설정
         newProfile.memo || '', // 기본값 설정
-        newProfile.gender || '' // 기본값 설정
+        newProfile.gender || '', // 기본값 설정
+        newProfile.age || ''
       );
       fetchProfiles(db); // 프로필 추가 후 상태 업데이트
     }

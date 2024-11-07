@@ -44,7 +44,7 @@ const RegisterScreen = () => {
             <View>
               {profiles.map((profile) => (
                 <View key={profile.id}>
-                   <ProfileItem id={profile.id} image={profile.image} memo={profile.memo} gender={profile.gender} name={profile.name} relationship={profile.relationship} />
+                   <ProfileItem age={profile.age}id={profile.id} image={profile.image} memo={profile.memo} gender={profile.gender} name={profile.name} relationship={profile.relationship} />
                 </View>
               ))}
             </View>

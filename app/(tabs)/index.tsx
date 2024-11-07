@@ -6,11 +6,12 @@ import { ThemedView } from '@/components/ThemedView';
 
 //DB
 import * as SQLite from 'expo-sqlite';
-import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
+
+//WebView
+import { WebView } from 'react-native-webview';
+import Constants from 'expo-constants';
 
 //Icon
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -47,30 +48,15 @@ export default function HomeScreen() {
     initializeDatabase();
   }, []);
 
-  // 실시간 스트림 가져오는 함수
-  useEffect(() => {
-    if (isPressed) {
-      const fetchFrame = async () => {
-        try {
-          const response = await fetch("http://<라즈베리파이_IP>:5000/video_feed");
-          const blob = await response.blob();
-          setImageUri(URL.createObjectURL(blob));
-        } catch (error) {
-          console.error("Error fetching frame:", error);
-        }
-      };
-      const intervalId = setInterval(fetchFrame, 100);  // 100ms 간격으로 이미지 갱신
-      return () => clearInterval(intervalId);
-    } else {
-      setImageUri(null);  // 버튼을 누르지 않으면 이미지 초기화
-    }
-  }, [isPressed]);
   return (
     <ThemedView style={styles.Container}>
       {isPressed ? (
         !isloading ? (
-          <ThemedView style={styles.top}>
-              <View style={styles.logo}>
+          <WebView
+            style={styles.webtop}
+            source={{ uri: 'http://192.168.137.147:5000/video_feed' }}
+          >
+            <View style={styles.logo}>
                 <Image
                   style={{ 
                     width: 40, 
@@ -83,13 +69,8 @@ export default function HomeScreen() {
               <View style={styles.chat_bubble}>
                 <Text style={styles.chat}>안녕하세요, Eunjin님! </Text>
               </View>
-              {/* 실시간 영상 표시 부분 */}
-              {imageUri ? (
-                <Image source={{ uri: imageUri }} style={styles.stream} />
-              ) : (
-                <ThemedText>스트리밍을 불러오는 중...</ThemedText>
-              )}
-          </ThemedView>
+          </WebView>
+         
         ):(
             <ThemedView style={styles.top}>
               <ActivityIndicator size="large" color="#4169e1" />
@@ -135,18 +116,21 @@ const styles = StyleSheet.create({
     flexDirection: 'column', 
   },
   top: {
-    justifyContent: 'center', 
-    alignItems: 'center', 
+    justifyContent: 'center',
+    alignItems:'center',
     flex:7,
   },
+  webtop: {
+    marginTop: Constants.statusBarHeight,
+    flexGrow:7,
+    height: '100%', width: '100%'
+  },
   bottom: {
-    flex:1,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
     marginVertical: 20,
   },
-
   play_btn:{
     alignItems:'center',
     justifyContent:'center',
@@ -156,7 +140,7 @@ const styles = StyleSheet.create({
   },
   logo : {
       position: 'absolute',
-      top: 50,
+      top: 15,
       right: 15,
       shadowColor: '#4169e1', 
       shadowOpacity: 0.5,  // 그림자의 투명도
@@ -169,7 +153,7 @@ const styles = StyleSheet.create({
     },
   chat_bubble: {
     position: 'absolute',
-    top: 55,
+    top: 15,
     right: 65,
     backgroundColor: 'lightgray',
     padding: 8,
@@ -188,11 +172,5 @@ const styles = StyleSheet.create({
   },
   chat: {
     fontSize: 15,
-  },
-  stream: {
-    width: '90%',  // 실시간 영상 크기 조절
-    height: '70%',
-    borderRadius: 10,
-    resizeMode: 'cover',
   },
 });

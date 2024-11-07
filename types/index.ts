@@ -7,6 +7,7 @@ export interface Profile {
     relationship: string; // 관계 (필수)
     gender: string; // 성별 (필수)
     memo: string; // 메모 (필수)
+    age: string;
   }
 
   // 데이터베이스 컨텍스트 생성

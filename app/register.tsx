@@ -18,12 +18,17 @@ export default function RegisterScreen() {
     relationship: '',
     memo: '',
     gender: '',
+    age: '',
   });
 
    // 프로필 추가
    const handleAddProfile = async () => {
-    await addProfile(newProfile); // 프로필 추가
-    setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '' }); // 입력 필드 초기화
+    if (!newProfile.name || !newProfile.relationship || !newProfile.memo || !newProfile.gender || Number(newProfile.age) <= 0 || !newProfile.age) {
+      alert('모든 필수 항목을 입력해주세요.'); // 필수 항목이 비어있을 경우 경고 메시지
+      return; // 추가를 진행하지 않음
+    }
+    await addProfile(newProfile); // 프로필 
+    setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
     router.push('/people');
   };
 
@@ -80,6 +85,12 @@ export default function RegisterScreen() {
               placeholder="성별 ('여자' 또는 '남자')"
               value={newProfile.gender}
               onChangeText={(text) => setNewProfile({ ...newProfile, gender: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="나이"
+              value={newProfile.age.toString()}
+              onChangeText={(text) => {setNewProfile({ ...newProfile, age: text })}}
             />
             <Button title="프로필 추가" onPress={handleAddProfile} />
             <Button title="모든 프로필 삭제" onPress={handleDeleteAllProfiles} color="red" />
