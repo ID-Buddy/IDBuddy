@@ -17,6 +17,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     Prompt: require('../assets/fonts/Prompt-Regular.ttf'),
+    Propmt_SemiBold : require('../assets/fonts/Prompt-SemiBold.ttf'),
   });
 
   useEffect(() => {

@@ -1,12 +1,15 @@
 import React, {useState} from 'react';
-import { Image, View, Button, TextInput, StyleSheet} from 'react-native';
+import { Image, View, Button, TextInput, StyleSheet,Pressable, Text} from 'react-native';
 import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 
 //type
 import { Profile } from '@/types/index';
 import { DbContextType } from '@/types/index';
+
+//icon
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -56,53 +59,98 @@ export default function RegisterScreen() {
     }
   };
 
+  //프로필 등록 취소
+  const cancelRegister = () => {
+    setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
+    router.back();
+  };
+
   return (
+    <>
+    <Stack.Screen 
+      options={{ 
+        title: '새로운 프로필' ,
+        headerLeft: () => (
+          <Pressable onPress={cancelRegister}>
+            <Text style={styles.cancel}>취소</Text>
+          </Pressable>
+        ),
+        headerStyle:{
+          backgroundColor: '#f2f2f2',
+        },
+        headerShadowVisible: false,
+      }}/>
     <View style ={styles.container}>
-        <View style={styles.inputContainer}>
-            <Button title="Pick an image from camera roll" onPress={pickImage} />
-            {image && <Image source={{ uri: image }} style={styles.image} />}
-            
-            <TextInput
-              style={styles.input}
-              placeholder="이름"
-              value={newProfile.name}
-              onChangeText={(text) => setNewProfile({ ...newProfile, name: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="관계"
-              value={newProfile.relationship}
-              onChangeText={(text) => setNewProfile({ ...newProfile, relationship: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="메모"
-              value={newProfile.memo}
-              onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="성별 ('여자' 또는 '남자')"
-              value={newProfile.gender}
-              onChangeText={(text) => setNewProfile({ ...newProfile, gender: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="나이"
-              value={newProfile.age.toString()}
-              onChangeText={(text) => {setNewProfile({ ...newProfile, age: text })}}
-            />
-            <Button title="프로필 추가" onPress={handleAddProfile} />
-            <Button title="모든 프로필 삭제" onPress={handleDeleteAllProfiles} color="red" />
-          </View>
+        <View>
+            <View style={styles.image_container}>
+              {image ? <Image source={{ uri: image }} style={styles.image} /> :(
+              <View style={styles.default_img}>
+                <Image
+                  style={{ 
+                    width: 200, 
+                    height: 200,
+                    opacity: 1,        
+                  }}
+                  source={require('@/assets/images/ID-B_logo.png')} // 로고 이미지 경로 설정
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+          <Pressable style={styles.add_image_btn}onPress={pickImage} >
+            <Text style={styles.add_image_content}>사진 추가</Text>
+          </Pressable>
+        </View>
+        <View style={styles.inputContainer}> 
+          <TextInput
+            style={styles.input}
+            placeholder="이름"
+            value={newProfile.name}
+            onChangeText={(text) => setNewProfile({ ...newProfile, name: text })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="관계"
+            value={newProfile.relationship}
+            onChangeText={(text) => setNewProfile({ ...newProfile, relationship: text })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="메모"
+            value={newProfile.memo}
+            onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="성별 ('여자' 또는 '남자')"
+            value={newProfile.gender}
+            onChangeText={(text) => setNewProfile({ ...newProfile, gender: text })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="나이"
+            value={newProfile.age.toString()}
+            onChangeText={(text) => {setNewProfile({ ...newProfile, age: text })}}
+          />
+        </View>
+        <Button title="프로필 추가" onPress={handleAddProfile} />
+        <Button title="모든 프로필 삭제" onPress={handleDeleteAllProfiles} color="red" />
+      </View>
     </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-    container :{flex: 1},
+    container :{
+      flex: 1, 
+      backgroundColor: '#f2f2f2',
+      paddingLeft: 5,
+      paddingRight: 5,
+    },
     inputContainer: {
-        marginBottom: 20,
+      padding: 10,
+      borderRadius: 10,
+      backgroundColor: 'white',
     },
     input: {
         borderWidth: 1,
@@ -111,8 +159,39 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
     },
+    image_container:{
+      paddingTop: 15,
+      marginBottom: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     image: {
+      borderRadius: 100,
       width: 200,
       height: 200,
     },
+    default_img: {
+      paddingTop: 80,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 100,
+      width: 200,
+      height: 200,
+      backgroundColor: '#B9D5FF',
+      overflow: 'hidden',
+    },
+    cancel:{
+      fontSize: 17,
+      color: '#4169E1',
+    },
+    add_image_content:{
+      fontSize: 17,
+      color: '#4169E1',
+      textAlign:'center',
+    },
+    add_image_btn:{
+      marginBottom: 3,
+      marginTop: 9,
+    },
+  
 });

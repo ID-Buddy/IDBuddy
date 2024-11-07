@@ -1,6 +1,6 @@
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Image,View,Pressable } from 'react-native';
+import { Image,View,Pressable, Text } from 'react-native';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -26,18 +26,33 @@ export default function TabLayout() {
           tabBarLabel: 'People',
           headerShown: true,
           headerStyle:{
-            backgroundColor: '#4169e1',
+            backgroundColor: '#f2f2f2',
             shadowColor: 'transparent', // 그림자 색상 투명하게 설정
             shadowOffset: { width: 0, height: 0 }, // 그림자 오프셋 설정
             shadowOpacity: 0, // 그림자 불투명도 설정
             shadowRadius: 0, // 그림자 반경 설정
-            
           },
+          headerLeft: () => (
+            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent:'center' }}>
+            <Image
+                  style={{ 
+                    width: 29, 
+                    height: 29,
+                    marginRight: 3, 
+                    opacity: 0.5,
+                  }}
+                  source={require('@/assets/images/ID-B_logo2.png')} // 로고 이미지 경로 설정
+                  resizeMode="contain"
+                />
+            <Text style ={{color: '#c8c8c8', fontFamily: 'Prompt', fontSize: 23}}>idbuddy</Text>
+            </View>
+          ),
+          headerLeftContainerStyle: {paddingLeft: 20,},
           headerRight: () => (
             <Pressable
               onPress={() => router.push('/register')}
             >
-                <Ionicons name="person-add" size={24} color="white" />
+                <Ionicons name="person-add" size={24} color="#4169E1" />
             </Pressable>
           ),
           headerRightContainerStyle: {paddingRight: 20,},
