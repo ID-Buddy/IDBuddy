@@ -79,7 +79,7 @@ export default function HomeScreen() {
           
         )
       ) : (
-        <ThemedView style={[styles.top]} lightColor="#dee2e6" darkColor="#212529">
+        <ThemedView style={[styles.top]} lightColor="#f2f2f2" darkColor="#212529">
           <MaterialCommunityIcons name="video-off" size={100} color="#4169e1"/>
           <ThemedText>카메라가 꺼져있습니다.</ThemedText>
         </ThemedView>

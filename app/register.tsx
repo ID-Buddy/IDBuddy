@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Image, View, Button, TextInput, StyleSheet,Pressable, Text} from 'react-native';
+import { Image, Platform, View, Button, TextInput, StyleSheet,Pressable,KeyboardAvoidingView,ScrollView, Text,Keyboard,TouchableWithoutFeedback } from 'react-native';
 import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
@@ -23,7 +23,6 @@ export default function RegisterScreen() {
     gender: '',
     age: '',
   });
-
    // 프로필 추가
    const handleAddProfile = async () => {
     if (!newProfile.name || !newProfile.relationship || !newProfile.memo || !newProfile.gender || Number(newProfile.age) <= 0 || !newProfile.age) {
@@ -51,8 +50,6 @@ export default function RegisterScreen() {
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.canceled) {
       setImage(result.assets[0].uri);
       setNewProfile({ ...newProfile, image: result.assets[0].uri });
@@ -63,6 +60,10 @@ export default function RegisterScreen() {
   const cancelRegister = () => {
     setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
     router.back();
+  };
+
+  const handleDone= () => {
+    Keyboard.dismiss(); // 키보드 숨기기
   };
 
   return (
@@ -80,62 +81,70 @@ export default function RegisterScreen() {
         },
         headerShadowVisible: false,
       }}/>
-    <View style ={styles.container}>
-        <View>
-            <View style={styles.image_container}>
-              {image ? <Image source={{ uri: image }} style={styles.image} /> :(
-              <View style={styles.default_img}>
-                <Image
-                  style={{ 
-                    width: 200, 
-                    height: 200,
-                    opacity: 1,        
-                  }}
-                  source={require('@/assets/images/ID-B_logo.png')} // 로고 이미지 경로 설정
-                  resizeMode="cover"
-                />
-              </View>
-            )}
-          <Pressable style={styles.add_image_btn}onPress={pickImage} >
-            <Text style={styles.add_image_content}>사진 추가</Text>
-          </Pressable>
+    <TouchableWithoutFeedback onPress={handleDone}>
+    <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // iOS에서는 padding, Android는 height로 설정
+      >
+      <ScrollView style ={styles.container}>
+          <View>
+              <View style={styles.image_container}>
+                {image ? <Image source={{ uri: image }} style={styles.image} /> :(
+                <View style={styles.default_img}>
+                  <Image
+                    style={{ 
+                      width: 200, 
+                      height: 200,
+                      opacity: 1,        
+                    }}
+                    source={require('@/assets/images/ID-B_logo.png')} // 로고 이미지 경로 설정
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+            <Pressable style={styles.add_image_btn}onPress={pickImage} >
+              <Text style={styles.add_image_content}>사진 추가</Text>
+            </Pressable>
+          </View>
+          <View style={styles.inputContainer}> 
+            <TextInput
+              style={styles.input}
+              placeholder="이름"
+              value={newProfile.name}
+              onChangeText={(text) => setNewProfile({ ...newProfile, name: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="나이"
+              value={newProfile.age.toString()}
+              onChangeText={(text) => {setNewProfile({ ...newProfile, age: text })}}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="성별 ('여자' 또는 '남자')"
+              value={newProfile.gender}
+              onChangeText={(text) => setNewProfile({ ...newProfile, gender: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="관계"
+              value={newProfile.relationship}
+              onChangeText={(text) => setNewProfile({ ...newProfile, relationship: text })}
+            />
+            <TextInput
+              style={styles.input_memo}
+              placeholder="메모"
+              multiline
+              value={newProfile.memo}
+              onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
+            />
+          </View>
+          <Button title="프로필 추가" onPress={handleAddProfile} />
+          <Button title="모든 프로필 삭제" onPress={handleDeleteAllProfiles} color="red" />
         </View>
-        <View style={styles.inputContainer}> 
-          <TextInput
-            style={styles.input}
-            placeholder="이름"
-            value={newProfile.name}
-            onChangeText={(text) => setNewProfile({ ...newProfile, name: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="관계"
-            value={newProfile.relationship}
-            onChangeText={(text) => setNewProfile({ ...newProfile, relationship: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="메모"
-            value={newProfile.memo}
-            onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="성별 ('여자' 또는 '남자')"
-            value={newProfile.gender}
-            onChangeText={(text) => setNewProfile({ ...newProfile, gender: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="나이"
-            value={newProfile.age.toString()}
-            onChangeText={(text) => {setNewProfile({ ...newProfile, age: text })}}
-          />
-        </View>
-        <Button title="프로필 추가" onPress={handleAddProfile} />
-        <Button title="모든 프로필 삭제" onPress={handleDeleteAllProfiles} color="red" />
-      </View>
-    </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
     </>
   );
 }
@@ -153,11 +162,19 @@ const styles = StyleSheet.create({
       backgroundColor: 'white',
     },
     input: {
+        borderBottomWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        padding: 10,
+        marginBottom: 10,
+    },
+    input_memo: {
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
+        height: 100,
     },
     image_container:{
       paddingTop: 15,

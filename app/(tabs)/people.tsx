@@ -3,11 +3,14 @@ import { ScrollView, ActivityIndicator, StyleSheet, View, Text } from 'react-nat
 import { ThemedView } from '@/components/ThemedView';
 import SearchBar from '@/components/SearchBar';
 import { LinearGradient } from 'expo-linear-gradient';
-
-import { useDb } from '@/context/DbContext';
 import Empty from '@/components/Empty';
 import ProfileItem from '@/components/ProfileItem';
+
+//Context 
+import { useDb } from '@/context/DbContext';
 import { DbContextType } from '@/types/index';
+import { useSearch } from '@/context/SearchContext';
+import { SearchContextType } from '@/types/index';
 
 const RegisterScreen = () => {
   const { profiles } = useDb() as DbContextType; // DbContext에서 프로필 가져오기
@@ -19,7 +22,13 @@ const RegisterScreen = () => {
       setLoading(false); // 프로필이 있을 때 로딩 상태 false로 변경
     }
   }, [profiles]); // profiles가 변경될 때마다 실행
-  
+ 
+  const {keyword, onChangeText}= useSearch() as SearchContextType;
+  const filteredProfiles = profiles.filter(profile =>
+    profile.name.includes(keyword) // 대소문자 구분 없이 필터링
+  );
+
+
   if (isLoading) {
     return (
       <ThemedView style={styles.Container}>
@@ -28,6 +37,7 @@ const RegisterScreen = () => {
     );
   }
 
+  
   return (
     <LinearGradient colors={['#f2f2f2', 'white']} locations={[0.2, 1]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.scrollContainer} stickyHeaderIndices={[1]} style={{ flex: 1 }}>
@@ -39,12 +49,12 @@ const RegisterScreen = () => {
           <SearchBar />
         </View>
         <View style={styles.Container}>
-          {profiles.length === 0 ? <Empty /> : 
+          {filteredProfiles.length === 0 ? <Empty /> : 
           (
             <View>
-              {profiles.map((profile) => (
+              {filteredProfiles.map((profile) => (
                 <View key={profile.id}>
-                   <ProfileItem age={profile.age}id={profile.id} image={profile.image} memo={profile.memo} gender={profile.gender} name={profile.name} relationship={profile.relationship} />
+                  <ProfileItem age={profile.age} id={profile.id} image={profile.image} memo={profile.memo} gender={profile.gender} name={profile.name} relationship={profile.relationship} />
                 </View>
               ))}
             </View>

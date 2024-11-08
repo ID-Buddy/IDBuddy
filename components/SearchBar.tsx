@@ -8,14 +8,24 @@ import {
 } from 'react-native';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+//SearchContext
+import { useSearch } from '@/context/SearchContext';
+import { SearchContextType } from '@/types/index';
 
 export default function SearchBar() {
+    const {keyword, onChangeText}= useSearch() as SearchContextType;
     const {width} = useWindowDimensions();
     return(
       <View style={[styles.block, {width: width - 40 }]}>
-        <TextInput style={styles.input} placeholder='검색'/>
+        <TextInput 
+          style={styles.input} 
+          placeholder='이름을 검색하세요'
+          value={keyword}
+          onChangeText={onChangeText}
+        />
         <Pressable
-          style={({pressed}) => [styles.button, pressed && {opacity: 0.5}]}>
+          style={({pressed}) => [styles.button, pressed && {opacity: 0.5}]}
+          onPress={() => onChangeText('')}>
           <MaterialIcons name="cancel" size={20} color="#4169e1" /> 
         </Pressable>  
       </View>

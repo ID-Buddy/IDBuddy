@@ -1,4 +1,4 @@
-import { getFocusedRouteNameFromRoute, DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 import { DbProvider } from '@/context/DbContext';
+import { SearchContextProvider } from '@/context/SearchContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -33,17 +34,19 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <DbProvider>
-        <Stack>
-            <Stack.Screen 
-              name="(tabs)"
-              options={{headerShown: false}}
-            />
-            <Stack.Screen 
-              name="register"
-              options={{}} 
-            />
-          <Stack.Screen name="+not-found" />
-        </Stack>
+        <SearchContextProvider>  
+          <Stack>
+              <Stack.Screen 
+                name="(tabs)"
+                options={{headerShown: false}}
+              />
+              <Stack.Screen 
+                name="register"
+                options={{}} 
+              />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </SearchContextProvider>
       </DbProvider>
     </ThemeProvider>
   );

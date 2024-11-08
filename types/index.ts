@@ -17,3 +17,11 @@ export interface DbContextType {
     addProfile: (profile: Profile) => Promise<void>; // 프로필 추가 함수
     deleteAllProfiles: () => Promise<void>; // 모든 프로필 삭제 함수
   }
+
+
+// 검색어 타입 설정
+// keyword와 onChangeText를 포함하는 객체 타입을 설정
+export interface SearchContextType {
+  keyword: string;
+  onChangeText: React.Dispatch<React.SetStateAction<string>>;
+}
