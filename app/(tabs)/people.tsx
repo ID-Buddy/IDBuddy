@@ -51,7 +51,7 @@ const RegisterScreen = () => {
         <View style={styles.Container}>
           {filteredProfiles.length === 0 ? <Empty /> : 
           (
-            <View>
+            <View style={styles.itemConainer}>
               {filteredProfiles.map((profile) => (
                 <View key={profile.id}>
                   <ProfileItem age={profile.age} id={profile.id} image={profile.image} memo={profile.memo} gender={profile.gender} name={profile.name} relationship={profile.relationship} />
@@ -92,9 +92,11 @@ const styles = StyleSheet.create({
   },
   Container: {
     flexGrow: 1, // 프로필 리스트를 포함하는 뷰가 가용 공간을 차지하도록 함
-    padding: 20,
     backgroundColor: '#f2f2f2',
   },
+  itemConainer:{
+    padding: 5,
+  }
 
 });
 
