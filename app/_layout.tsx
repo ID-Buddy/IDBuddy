@@ -42,7 +42,9 @@ export default function RootLayout() {
               />
               <Stack.Screen 
                 name="register"
-                options={{}} 
+                options={{
+                  presentation: 'modal',
+                }} 
               />
             <Stack.Screen name="+not-found" />
           </Stack>

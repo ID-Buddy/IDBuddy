@@ -1,4 +1,4 @@
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs, useRouter,Link } from 'expo-router';
 import React from 'react';
 import { Image,View,Pressable, Text } from 'react-native';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
@@ -49,11 +49,11 @@ export default function TabLayout() {
           ),
           headerLeftContainerStyle: {paddingLeft: 20,},
           headerRight: () => (
-            <Pressable
-              onPress={() => router.push('/register')}
-            >
+            <View>
+              <Link href="../register" style={{}}>
                 <Ionicons name="person-add" size={24} color="#4169E1" />
-            </Pressable>
+              </Link>
+            </View>
           ),
           headerRightContainerStyle: {paddingRight: 20,},
           tabBarActiveTintColor: '#4169e1',
