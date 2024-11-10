@@ -23,9 +23,11 @@ export default function ProfileItem({image,name,relationship, memo, gender, age}
             <Text style={styles.defaultText}numberOfLines={1} ellipsizeMode='tail'>{name}</Text>
         </View>
         )}
-        <View style={styles.info}>
-          <Text>{name}</Text>
-          <Text>{relationship}</Text>
+        <View style={styles.content}>
+          <Text style={styles.name}>{name}</Text>
+          <View style={styles.info}>
+            <Text style={styles.relationship}>{relationship}</Text>
+          </View>  
         </View>
       </View>
     </Link>
@@ -44,19 +46,19 @@ const styles = StyleSheet.create({
     padding: 10, 
     flexDirection:'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
   },
-  info: {
+  content: {
     flex: 1,
     flexDirection: 'row',
     paddingLeft: 15,
     paddingRight: 15,
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   defaultImage:{
     backgroundColor: 'lightgray',
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     borderRadius: 50,
     marginBottom: 10,
     alignItems: 'center',
@@ -67,12 +69,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   image: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     borderRadius: 50,
-    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   name: {
-    
+    fontSize: 16,
+    fontWeight: 600,
+  },
+  relationship:{
+    fontSize: 15,
+  },
+  info:{
+    borderRadius: 100,
+    backgroundColor: '#D0E3FF',
+    padding: 6,
+    paddingLeft: 7,
+    paddingRight: 7,
   }
 });
