@@ -115,24 +115,28 @@ export default function RegisterScreen() {
               style={styles.input}
               placeholder="이름"
               value={newProfile.name}
+              placeholderTextColor = '#ccc'
               onChangeText={(text) => setNewProfile({ ...newProfile, name: text })}
             />
             <TextInput
               style={styles.input}
               placeholder="나이"
               value={newProfile.age.toString()}
+              placeholderTextColor = '#ccc'
               onChangeText={(text) => {setNewProfile({ ...newProfile, age: text })}}
             />
             <TextInput
               style={styles.input}
               placeholder="성별 ('여자' 또는 '남자')"
               value={newProfile.gender}
+              placeholderTextColor = '#ccc'
               onChangeText={(text) => setNewProfile({ ...newProfile, gender: text })}
             />
             <TextInput
               style={styles.input}
               placeholder="관계"
               value={newProfile.relationship}
+              placeholderTextColor = '#ccc'
               onChangeText={(text) => setNewProfile({ ...newProfile, relationship: text })}
             />
             <TextInput
@@ -140,6 +144,7 @@ export default function RegisterScreen() {
               placeholder="메모"
               multiline
               value={newProfile.memo}
+              placeholderTextColor = '#ccc'
               onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
             />
           </View>
@@ -170,6 +175,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
+        
     },
     input_memo: {
         borderWidth: 1,
