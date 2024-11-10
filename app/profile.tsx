@@ -1,17 +1,21 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
+import {View, Text, StyleSheet, Image, Pressable, Button} from 'react-native';
 import { Profile } from '@/types/index';
 import {Stack, useLocalSearchParams, useRouter} from 'expo-router';
+import { useDb } from '@/context/DbContext';
+import { DbContextType } from '@/types/index';
 //Icon
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function profileScreen(){
     const router = useRouter();
+    const {deleteProfile} = useDb() as DbContextType;
     const gotoPeopelScreen= () => {
       router.back();
     }
     const params = useLocalSearchParams();
-    const {image,name,relationship, memo, gender, age} = params  as {
+    const {id,image,name,relationship, memo, gender, age} = params  as {
+        id?: number;
         image?: string;
         name?: string;
         relationship?: string;
@@ -19,6 +23,10 @@ export default function profileScreen(){
         gender?: string;
         age?: string;
       };
+    const handleDeleteProfile = async () =>{
+      await deleteProfile(id as number)
+      router.back();
+    };
     return(
       <>
       <Stack.Screen 
@@ -55,6 +63,7 @@ export default function profileScreen(){
           <Text style={styles.memo}>{memo}</Text>
         </View>
        </View>
+       <Button title="프로필 삭제" onPress={() => id !== undefined && handleDeleteProfile()} color="red" />
     </View>
     </>
     );
@@ -113,16 +122,17 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
       defaultImage:{
-        backgroundColor: 'lightgray',
+        backgroundColor: '#c4c4c4',
         width: 200,
         height: 200,
         borderRadius: 50,
         marginBottom: 10,
         alignItems: 'center',
         justifyContent: 'center',
+        zIndex: 2,
       },
       defaultText: {
-        fontSize: 20,
+        fontSize: 60,
         fontWeight: 'bold',
       },
       image: {

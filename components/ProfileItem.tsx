@@ -4,13 +4,16 @@ import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
 
 import { Profile } from '@/types/index';
 
-export default function ProfileItem({image,name,relationship, memo, gender, age}:Profile){
+export default function ProfileItem({id,image,name,relationship, memo, gender, age}:Profile){
+  if (image){
+    console.log(image);
+  }
   return(
     <View style={styles.container} >
     <Link 
       href={{
         pathname: "/profile",
-        params: {image:image,name:name,relationship:relationship, memo:memo, gender:gender, age:age}
+        params: {id:id,image:image,name:name,relationship:relationship, memo:memo, gender:gender, age:age}
       }}>
       <View  style={styles.item}>
         {image ? (
@@ -56,11 +59,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   defaultImage:{
-    backgroundColor: 'lightgray',
+    backgroundColor: '#c4c4c4',
     width: 60,
     height: 60,
     borderRadius: 50,
-    marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },

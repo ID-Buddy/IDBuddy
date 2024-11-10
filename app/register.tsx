@@ -26,8 +26,12 @@ export default function RegisterScreen() {
   });
    // 프로필 추가
    const handleAddProfile = async () => {
-    if (!newProfile.name || !newProfile.relationship || !newProfile.memo || !newProfile.gender || Number(newProfile.age) <= 0 || !newProfile.age) {
+    if (!newProfile.name || !newProfile.relationship || !newProfile.memo || !newProfile.gender || !newProfile.age) {
       alert('모든 필수 항목을 입력해주세요.'); // 필수 항목이 비어있을 경우 경고 메시지
+      return; // 추가를 진행하지 않음
+    }
+    if(Number(newProfile.age) <= 0 || isNaN(Number(newProfile.age))){
+      alert('올바른 나이를 입력해주세요'); // 필수 항목이 비어있을 경우 경고 메시지
       return; // 추가를 진행하지 않음
     }
     if(newProfile.gender != "여자" && newProfile.gender != "남자"){
@@ -37,11 +41,6 @@ export default function RegisterScreen() {
     await addProfile(newProfile); // 프로필 
     setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
     router.back();
-  };
-
-  // 모든 프로필 삭제
-  const handleDeleteAllProfiles = async () => {
-    await deleteAllProfiles(); // 모든 프로필 삭제
   };
 
   const [image, setImage] = useState<string | null>(null);
@@ -145,7 +144,6 @@ export default function RegisterScreen() {
             />
           </View>
           <Button title="프로필 추가" onPress={handleAddProfile} />
-          <Button title="모든 프로필 삭제" onPress={handleDeleteAllProfiles} color="red" />
         </View>
       </ScrollView>
       </KeyboardAvoidingView>

@@ -16,6 +16,7 @@ export interface DbContextType {
     profiles: Profile[]; // 프로필 데이터 배열
     addProfile: (profile: Profile) => Promise<void>; // 프로필 추가 함수
     deleteAllProfiles: () => Promise<void>; // 모든 프로필 삭제 함수
+    deleteProfile: (id: number) => Promise<void>; // 모든 프로필 삭제 함수
   }
 
 

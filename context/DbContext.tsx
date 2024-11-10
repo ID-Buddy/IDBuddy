@@ -39,12 +39,13 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   const addProfile = async (newProfile: Profile) => {
     if (db) {
       await db.runAsync(
-        'INSERT INTO profiles (image, name, relationship, memo, gender,age) VALUES (?, ?, ?, ?, ?,?)',
-        newProfile.image || '', // 기본값 설정
-        newProfile.name || '', // 기본값 설정
-        newProfile.relationship || '', // 기본값 설정
-        newProfile.memo || '', // 기본값 설정
-        newProfile.gender || '', // 기본값 설정
+        'INSERT INTO profiles (id,image, name, relationship, memo, gender,age) VALUES (?,?, ?, ?, ?, ?,?)',
+        newProfile.id,
+        newProfile.image || '', 
+        newProfile.name || '', 
+        newProfile.relationship || '',
+        newProfile.memo || '', 
+        newProfile.gender || '', 
         newProfile.age || ''
       );
       fetchProfiles(db); // 프로필 추가 후 상태 업데이트
@@ -59,8 +60,16 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  //프로필 삭제
+  const deleteProfile = async (id: number) => {
+    if (db) {
+      await db.runAsync(`DELETE FROM profiles WHERE id = ?`, [id]); // ID로 특정 프로필 삭제
+      fetchProfiles(db); // 삭제 후 상태 업데이트
+    }
+  };
+
   return (
-    <DbContext.Provider value={{ db, profiles, addProfile, deleteAllProfiles }}>
+    <DbContext.Provider value={{ db, profiles, addProfile, deleteProfile, deleteAllProfiles }}>
       {children}
     </DbContext.Provider>
   );
