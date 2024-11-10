@@ -13,6 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const isModal = router.canGoBack();
   const { db, addProfile, deleteAllProfiles } = useDb() as DbContextType;
   const [newProfile, setNewProfile] = useState<Profile>({
     id: Date.now(), // id는 새로운 프로필 생성 시 고유하게 설정할 수 있음
@@ -29,9 +30,13 @@ export default function RegisterScreen() {
       alert('모든 필수 항목을 입력해주세요.'); // 필수 항목이 비어있을 경우 경고 메시지
       return; // 추가를 진행하지 않음
     }
+    if(newProfile.gender != "여자" && newProfile.gender != "남자"){
+      alert('성별을 정확하게 기입해주세요.("여자" 또는 남자"');
+     return;
+    }
     await addProfile(newProfile); // 프로필 
     setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
-    router.push('/people');
+    router.back();
   };
 
   // 모든 프로필 삭제

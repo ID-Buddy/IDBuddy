@@ -46,6 +46,10 @@ export default function RootLayout() {
                   presentation: 'modal',
                 }} 
               />
+              <Stack.Screen 
+                name="profile"
+                options={{}} 
+              />
             <Stack.Screen name="+not-found" />
           </Stack>
         </SearchContextProvider>

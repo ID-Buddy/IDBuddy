@@ -1,61 +1,57 @@
-import React, {useState} from 'react';
+import React from 'react';
+import {Link} from 'expo-router';
 import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
 
 import { Profile } from '@/types/index';
 
 export default function ProfileItem({image,name,relationship, memo, gender, age}:Profile){
-  const [isVisible, setIsVisible] = useState<boolean>(false); // 상태 정의
-
-  // toggle 함수
-  const toggleVisibility = () => {
-    setIsVisible(prevState => !prevState); // 이전 상태 반전
-  };
-
   return(
-    <Pressable onPress={toggleVisibility}>
-    <View  style={styles.item}>
-          {image ? (
-          <Image 
-              source={{ uri: image }} 
-              style={styles.image} 
-          />
-          ) : (
-          <View style={styles.defaultImage}>
-              <Text style={styles.defaultText}numberOfLines={1} ellipsizeMode='tail'>{name}</Text>
-          </View>
-          )}
-          {isVisible?
-            <View style={styles.info}>
-            <Text>이름: {name}</Text>
-            <Text>나이: {Number(age)}</Text>
-            <Text>성별: {gender}</Text>
-            <Text>관계: {relationship}</Text>
-            <Text>메모:</Text>
-            <Text>{memo}</Text>
-          </View> :(
-            <View>
-              <Text>{name}</Text>
-            </View>
-          )
-        }
-            
+    <View style={styles.container} >
+    <Link 
+      href={{
+        pathname: "/profile",
+        params: {image:image,name:name,relationship:relationship, memo:memo, gender:gender, age:age}
+      }}>
+      <View  style={styles.item}>
+        {image ? (
+        <Image 
+            source={{ uri: image }} 
+            style={styles.image} 
+        />
+        ) : (
+        <View style={styles.defaultImage}>
+            <Text style={styles.defaultText}numberOfLines={1} ellipsizeMode='tail'>{name}</Text>
+        </View>
+        )}
+        <View style={styles.info}>
+          <Text>{name}</Text>
+          <Text>{relationship}</Text>
+        </View>
       </View>
-    </Pressable>
+    </Link>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  item:{
+  container:{
     flex: 1,
-    flexDirection:'row',
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 13,
+    marginBottom: 3,
+  },
+  item:{
+    width: '100%',
+    padding: 10, 
+    flexDirection:'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   info: {
-    paddingLeft: 10,
-    paddingRight: 10,
+    flex: 1,
+    flexDirection: 'row',
+    paddingLeft: 15,
+    paddingRight: 15,
+    justifyContent: 'space-between',
   },
   defaultImage:{
     backgroundColor: 'lightgray',
