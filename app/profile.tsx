@@ -30,7 +30,7 @@ export default function profileScreen(){
               </Pressable>
             ),
             headerStyle:{
-            backgroundColor: '#f2f2f2',
+              backgroundColor: '#f2f2f2'
             },
             headerShadowVisible: false,
         }}/> 
@@ -44,25 +44,78 @@ export default function profileScreen(){
             <Text style={styles.defaultText}numberOfLines={1} ellipsizeMode='tail'>{name}</Text>
           </View>
        )}
-       <Text>이름: {name}</Text>
-       <Text>나이 : {age}</Text>
+       <View style={styles.info_container}>
+        <View style={styles.row_center}>
+          <Text style={[styles.content, styles.name]}>{name}</Text>
+          <Text style={styles.content}>({age})</Text>
+        </View>
+        <Text style={[styles.content, styles.ref]}>{relationship}</Text>
+        <View style={styles.memo_container}>
+          <Text style={styles.memo_title}>메모</Text>
+          <Text style={styles.memo}>{memo}</Text>
+        </View>
+       </View>
     </View>
     </>
     );
 }
 
 const styles = StyleSheet.create({
-    container:{
+  row_center:{
+    flexDirection: 'row',
+    alignItems:'center'
+  }, 
+  ref:{
+    color: '#838383',
+  },
+  memo_title:{
+    fontSize: 17,
+    color: '#4169E1',
+    marginBottom: 8,
+  },
+  memo_container:{
+    marginTop: 10,
+    borderColor: '#4169E1',
+    borderRadius: 10,
+    backgroundColor: '#f6f6f6',
+    width: '80%',
+    borderWidth:1.5,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  memo:{
+    lineHeight: 25,
+  },
+  container:{
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: '#f2f2f2',
         borderRadius: 10,
         padding: 13,
         alignItems: 'center',
       },
+      info_container:{
+        marginTop: -50,
+        paddingTop: 65,
+        backgroundColor: 'white',
+        width: '80%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        paddingBottom: 25,
+        zIndex: 1,
+        shadowColor: '#a4a4a4',
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        shadowOffset: {
+          width: 0,
+          height: 3,
+        },
+        elevation: 3,
+      },
       defaultImage:{
         backgroundColor: 'lightgray',
-        width: 80,
-        height: 80,
+        width: 200,
+        height: 200,
         borderRadius: 50,
         marginBottom: 10,
         alignItems: 'center',
@@ -73,10 +126,18 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
       },
       image: {
-        width: 80,
-        height: 80,
+        width: 200,
+        height: 200,
         borderRadius: 50,
-        marginBottom: 10,
+        zIndex: 2,
       },
+      content:{
+        fontSize: 15,
+        marginBottom : 8,
+      },
+      name:{
+        fontSize: 20,
+        fontWeight: 600,
+      }
 });
 
