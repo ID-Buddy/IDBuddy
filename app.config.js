@@ -14,6 +14,6 @@ export default {
     }
   },
   extra: {
-    videoUri: process.env.VIDEO_URI,
+    serverUri: process.env.SERVER_URI,
   },
 };

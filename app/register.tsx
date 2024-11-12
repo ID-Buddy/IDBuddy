@@ -10,8 +10,21 @@ import { DbContextType } from '@/types/index';
 
 //icon
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+//URI
+import Constants from 'expo-constants';
+const serverUri = __DEV__
+? process.env.SERVER_URI
+: Constants.expoConfig?.extra?.serverUri;
 
 export default function RegisterScreen() {
+  //사진 확장자 
+  const getFileExtension = (uri: string) => {
+    const uriParts = uri.split('.');
+    const fileExtension = uriParts[uriParts.length - 1].toLowerCase(); // 확장자를 소문자로 변환하여 일관성 유지
+    return fileExtension;
+  };
   const router = useRouter();
   const isModal = router.canGoBack();
   const { db, addProfile, deleteAllProfiles } = useDb() as DbContextType;
@@ -24,8 +37,16 @@ export default function RegisterScreen() {
     gender: '',
     age: '',
   });
-   // 프로필 추가
-   const handleAddProfile = async () => {
+
+  //추가된 프로필인가
+  const [isAdded, setAdded] = useState<boolean>(false);
+  //등록할 이미지 골랐나
+  const [isSelected, setSelected] = useState<boolean>(false);
+  //서버에 보낼 이미지들
+  const [sendImage, setSendImage] = useState<string>('');
+
+  // 프로필 추가
+  const handleAddProfile = async () => {
     if (!newProfile.name || !newProfile.relationship || !newProfile.memo || !newProfile.gender || !newProfile.age) {
       alert('모든 필수 항목을 입력해주세요.'); // 필수 항목이 비어있을 경우 경고 메시지
       return; // 추가를 진행하지 않음
@@ -36,17 +57,15 @@ export default function RegisterScreen() {
     }
     if(newProfile.gender != "여자" && newProfile.gender != "남자"){
       alert('성별을 정확하게 기입해주세요.("여자" 또는 남자"');
-     return;
+      return;
     }
-    await addProfile(newProfile); // 프로필 
-    setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
-    router.back();
+    setAdded(true)
   };
 
   const [image, setImage] = useState<string | null>(null);
 
+  // 단일 이미지 선택
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -60,9 +79,69 @@ export default function RegisterScreen() {
     }
   };
 
+  const pickSendImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSendImage(result.assets[0].uri);
+      setSelected(true);
+    }
+  };
+  
+  //이미지 업로드 API 호출
+  const uploadImage = async () => {
+    if(!sendImage){
+      alert("이미지를 추가하세요!");
+      return;
+    }
+    if (isAdded && newProfile.id && sendImage){
+      
+      // 이미지 URI로부터 Blob 객체 생성
+      const response = await fetch(sendImage); 
+      const blob = await response.blob(); // Blob으로 변환
+      const extension = getFileExtension(sendImage);
+      
+      // FormData에 프로필 ID와 이미지 파일 추가
+      const formData = new FormData();
+      formData.append('name', String(newProfile.id));  // 프로필 ID 추가
+      formData.append('file', blob, `${String(newProfile.id)}.${extension}`, // 예: profile.jpeg
+      );
+
+      try {
+        const response = await fetch(`${serverUri}/api/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert(result.message || '등록이 성공적으로 이루어졌습니다!');
+          await addProfile(newProfile); // 프로필 
+          setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
+          router.back();
+        } else {
+          alert(result.message || '이미지 업로드 실패');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('서버 요청 중 오류가 발생했습니다.');
+      }
+
+    } 
+  }
   //프로필 등록 취소
   const cancelRegister = () => {
     setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
+    setAdded(false);
+    setSelected(false);
+    setSendImage('');
     router.back();
   };
 
@@ -91,6 +170,7 @@ export default function RegisterScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // iOS에서는 padding, Android는 height로 설정
       >
       <ScrollView style ={styles.container}>
+          {!isAdded ? 
           <View>
               <View style={styles.image_container}>
                 {image ? <Image source={{ uri: image }} style={styles.image} /> :(
@@ -148,8 +228,34 @@ export default function RegisterScreen() {
               onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
             />
           </View>
-          <Button title="프로필 추가" onPress={handleAddProfile} />
-        </View>
+          <Button title="완료" onPress={handleAddProfile} />
+        
+        </View> : (
+          <View style={styles.register_container}>
+            <Text>얼굴 등록</Text>
+            <Text>정면인 사진</Text>
+            
+            <Pressable onPress={pickSendImage}>
+              {sendImage ? <Image source={{ uri: sendImage }} style={styles.sendImage} /> :(
+                <View>  
+                  <MaterialCommunityIcons name="tooltip-image" size={100} color="black" />
+                </View>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={uploadImage}
+              style={[
+                styles.button,
+                { backgroundColor: isSelected ? '#4CAF50': '#D3D3D3'}, // 비활성화되면 회색, 활성화되면 초록색
+                { opacity: isSelected ? 1 : 0.5 },  // 비활성화되면 버튼이 흐릿해짐
+              ]}
+              disabled={!isSelected}
+            >
+              <Text>동록 완료</Text>
+            </Pressable>
+          </View>
+        )}
+          
       </ScrollView>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
@@ -158,16 +264,32 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+    button:{
+      width: '80%',
+      height: 50,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    sendImage:{
+      margin: 2,
+      width: 300,
+      height: 300,
+    },
+    register_container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     container :{
       flex: 1, 
       backgroundColor: '#f2f2f2',
-      paddingLeft: 5,
-      paddingRight: 5,
+      paddingHorizontal: 5,
     },
     inputContainer: {
       padding: 10,
       borderRadius: 10,
       backgroundColor: 'white',
+      paddingBottom : 160,
     },
     input: {
         borderBottomWidth: 1,

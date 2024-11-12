@@ -36,6 +36,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const initializeDatabase = async () => {
       const db = await SQLite.openDatabaseAsync('profiles.db');
+
       await db.execAsync(`
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS profiles (
@@ -44,6 +45,7 @@ export default function HomeScreen() {
           name TEXT NOT NULL,
           relationship TEXT NOT NULL,
           gender TEXT,
+          age INTEGER,
           memo TEXT NOT NULL
         );
       `);
