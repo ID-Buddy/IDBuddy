@@ -1,5 +1,6 @@
 import { ActivityIndicator, Image, StyleSheet, Pressable, View, Text} from 'react-native';
 import React, { useEffect, createContext, useContext, useState } from 'react';
+
 //Themed
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -10,6 +11,11 @@ import * as SQLite from 'expo-sqlite';
 //WebView
 import { WebView } from 'react-native-webview';
 import Constants from 'expo-constants';
+
+//uri
+const videoUri = __DEV__
+? process.env.VIDEO_URI
+: Constants.expoConfig?.extra?.videoUri;
 
 //Icon
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -54,7 +60,7 @@ export default function HomeScreen() {
         !isloading ? (
           <WebView
             style={styles.webtop}
-            source={{ uri: 'http://192.168.137.147:5000/video_feed' }}
+            source={{ uri: videoUri }}
           >
             <View style={styles.logo}>
                 <Image
