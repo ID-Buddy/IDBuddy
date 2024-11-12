@@ -26,7 +26,6 @@ const db = SQLite.openDatabaseAsync('profiles.db');
 export default function HomeScreen() {
   const [isloading, setLoading] = useState(true);
   const [isPressed, setPressed] = useState(false); // pressed 상태 관리
-  const [imageUri, setImageUri] = useState<string | null>(null); // 실시간 스트림 이미지 URI 상태
 
   const handlePress = () => {
     setPressed(!isPressed); // pressed 상태를 토글
