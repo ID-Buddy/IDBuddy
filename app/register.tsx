@@ -3,7 +3,7 @@ import { Image, Platform, View, Button, TextInput, StyleSheet,Pressable,Keyboard
 import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
-
+import axios from 'axios';
 //type
 import { Profile } from '@/types/index';
 import { DbContextType } from '@/types/index';
@@ -12,12 +12,8 @@ import { DbContextType } from '@/types/index';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-//URI
-import Constants from 'expo-constants';
-const serverUri = __DEV__
-? process.env.SERVER_URI
-: Constants.expoConfig?.extra?.serverUri;
-
+//constant
+const serverUrl = process.env.SERVER_URI;
 export default function RegisterScreen() {
   //사진 확장자 
   const getFileExtension = (uri: string) => {
@@ -44,6 +40,9 @@ export default function RegisterScreen() {
   const [isSelected, setSelected] = useState<boolean>(false);
   //서버에 보낼 이미지들
   const [sendImage, setSendImage] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+
 
   // 프로필 추가
   const handleAddProfile = async () => {
@@ -80,6 +79,7 @@ export default function RegisterScreen() {
   };
 
   const pickSendImage = async () => {
+    console.log(serverUrl);
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -91,51 +91,72 @@ export default function RegisterScreen() {
       setSelected(true);
     }
   };
-  
-  //이미지 업로드 API 호출
+
   const uploadImage = async () => {
-    if(!sendImage){
+    if (!isSelected) {
       alert("이미지를 추가하세요!");
       return;
     }
-    if (isAdded && newProfile.id && sendImage){
-      
+  
+    // 업로드 중 상태 설정
+    setUploading(true);
+    setUploadMessage('Uploading...');
+
+    // FormData 생성
+    const formData = new FormData();
+    const localUri = sendImage.replace('file://', ''); // "file:// 제거!"
+    let filetype = sendImage.substring(sendImage.lastIndexOf(".") + 1);
+    const filename = `${String(newProfile.id)}.${filetype}` // 파일 이름 추출
+    
+    //blob 객체 생성
+    const response = await fetch(localUri);
+    const blob = await response.blob();
+
+    // FormData에 이미지 파일,이름 추가
+    formData.append('name',  String(newProfile.id));
+    formData.append('file', blob, filename);
+
+    try {
       // 이미지 URI로부터 Blob 객체 생성
-      const response = await fetch(sendImage); 
-      const blob = await response.blob(); // Blob으로 변환
-      const extension = getFileExtension(sendImage);
-      
-      // FormData에 프로필 ID와 이미지 파일 추가
+      const response = await fetch(sendImage);
+      const blob = await response.blob();  // Blob 객체로 변환
+  
       const formData = new FormData();
-      formData.append('name', String(newProfile.id));  // 프로필 ID 추가
-      formData.append('file', blob, `${String(newProfile.id)}.${extension}`, // 예: profile.jpeg
-      );
-
-      try {
-        const response = await fetch(`${serverUri}/api/register`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          body: formData,
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-          alert(result.message || '등록이 성공적으로 이루어졌습니다!');
-          await addProfile(newProfile); // 프로필 
-          setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
-          router.back();
-        } else {
-          alert(result.message || '이미지 업로드 실패');
-        }
-      } catch (error) {
-        console.error(error);
-        alert('서버 요청 중 오류가 발생했습니다.');
+      formData.append('name', String(newProfile.id)); // ID를 문자열로 추가
+      formData.append('file', blob, filename); // 파일명과 Blob 추가
+  
+      // axios를 사용한 파일 업로드 요청
+      const res = await axios.post(`${serverUrl}/api/register`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      // 서버 응답 확인
+      if (res.status === 200) {
+        alert(res.data.message || '등록이 성공적으로 이루어졌습니다!');
+        await addProfile(newProfile); // 프로필 추가
+        setNewProfile({
+          id: Date.now(),
+          image: '',
+          name: '',
+          relationship: '',
+          memo: '',
+          gender: '',
+          age: ''
+        }); // 입력 필드 초기화
+        router.back();
+      } else {
+        alert(res.data.message || '이미지 업로드 실패');
       }
-
-    } 
-  }
+  
+    } catch (error) {
+      console.error('업로드 오류:', error);
+      alert('서버 요청 중 오류가 발생했습니다.');
+    }
+  };
+  
+  
   //프로필 등록 취소
   const cancelRegister = () => {
     setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화

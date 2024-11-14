@@ -12,10 +12,9 @@ import * as SQLite from 'expo-sqlite';
 import { WebView } from 'react-native-webview';
 import Constants from 'expo-constants';
 
-//uri
-const videoUri = __DEV__
-? process.env.VIDEO_URI
-: Constants.expoConfig?.extra?.videoUri;
+//constant
+const videoUrl = process.env.VIDEO_URI
+
 
 //Icon
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -55,13 +54,21 @@ export default function HomeScreen() {
     initializeDatabase();
   }, []);
 
+  const injectedJavaScript = `
+  document.querySelector('video').style.width = '100%';
+  document.querySelector('video').style.height = '100%';
+  true;
+`;
+
   return (
     <ThemedView style={styles.Container}>
       {isPressed ? (
         !isloading ? (
           <WebView
             style={styles.webtop}
-            source={{ uri: videoUri }}
+            source={{ uri: `${videoUrl}`}}
+            injectedJavaScript={injectedJavaScript}
+
           >
             <View style={styles.logo}>
                 <Image
