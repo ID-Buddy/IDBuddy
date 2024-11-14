@@ -13,7 +13,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 //constant
-const serverUrl = process.env.SERVER_URI;
 export default function RegisterScreen() {
   //사진 확장자 
   const getFileExtension = (uri: string) => {
@@ -66,7 +65,7 @@ export default function RegisterScreen() {
   // 단일 이미지 선택
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -79,9 +78,8 @@ export default function RegisterScreen() {
   };
 
   const pickSendImage = async () => {
-    console.log(serverUrl);
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes:  ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
@@ -101,36 +99,39 @@ export default function RegisterScreen() {
     // 업로드 중 상태 설정
     setUploading(true);
     setUploadMessage('Uploading...');
-
+  
     // FormData 생성
     const formData = new FormData();
-    const localUri = sendImage.replace('file://', ''); // "file:// 제거!"
+    const localUri = sendImage.replace('file://', ''); // "file://" 제거
+    console.log(sendImage);
+    console.log(localUri);
     let filetype = sendImage.substring(sendImage.lastIndexOf(".") + 1);
-    const filename = `${String(newProfile.id)}.${filetype}` // 파일 이름 추출
-    
-    //blob 객체 생성
-    const response = await fetch(localUri);
-    const blob = await response.blob();
-
-    // FormData에 이미지 파일,이름 추가
-    formData.append('name',  String(newProfile.id));
-    formData.append('file', blob, filename);
-
+    const filename = `${String(newProfile.id)}.${filetype}`; // 파일 이름 설정
+    console.log('파일 이름:', filename);
+  
     try {
-      // 이미지 URI로부터 Blob 객체 생성
-      const response = await fetch(sendImage);
-      const blob = await response.blob();  // Blob 객체로 변환
+      // blob 객체 생성
+      const response = await fetch(localUri);
+      let blob = await response.blob();
   
-      const formData = new FormData();
-      formData.append('name', String(newProfile.id)); // ID를 문자열로 추가
-      formData.append('file', blob, filename); // 파일명과 Blob 추가
+      // 올바른 MIME 타입으로 재설정 (image/jpeg)
+      if (blob.type === 'text/plain' || !blob.type.startsWith('image/')) {
+        let mimeType = `image/jpeg`; // 항상 image/jpeg로 설정
+        blob = new Blob([blob], { type: mimeType });
+      }
+      console.log('MIME 타입:', blob.type); // MIME 타입 출력
   
-      // axios를 사용한 파일 업로드 요청
-      const res = await axios.post(`${serverUrl}/api/register`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // FormData에 이미지 파일, 이름 추가
+      formData.append('name', String(newProfile.id));
+      formData.append('file', blob, filename);
+  
+      // FormData의 실제 내용을 확인
+      for (let pair of formData.entries()) {
+        console.log(`${pair[0]}:`, pair[1]);
+      }
+  
+      // axios를 사용한 파일 업로드 요청 (Content-Type 자동 설정)
+      const res = await axios.post('http://192.168.137.147:5001/api/register', formData);
   
       // 서버 응답 확인
       if (res.status === 200) {
@@ -155,6 +156,7 @@ export default function RegisterScreen() {
       alert('서버 요청 중 오류가 발생했습니다.');
     }
   };
+  
   
   
   //프로필 등록 취소
