@@ -4,6 +4,8 @@ import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
 import axios from 'axios';
+
+import * as FileSystem from 'expo-file-system';
 //uriToBlob
 import getBlobFromUri from '@/components/getBlobFromUri';
 //type
@@ -17,12 +19,34 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 //constant
 export default function RegisterScreen() {
   const registerUrl = process.env.EXPO_PUBLIC_API_REGISTER as string;
-  //사진 확장자 
-  const getFileExtension = (uri: string) => {
-    const uriParts = uri.split('.');
-    const fileExtension = uriParts[uriParts.length - 1].toLowerCase(); // 확장자를 소문자로 변환하여 일관성 유지
-    return fileExtension;
-  };
+  // 이미지 저장 함수
+  async function saveImageToDisk(uri: string): Promise<string | null> {
+    // documentDirectory가 null일 경우 예외 처리
+    if (!FileSystem.documentDirectory) {
+      console.error('documentDirectory is null');
+      return null; // 오류를 반환하거나 예외를 던질 수 있습니다.
+    }
+  
+    const fileName = uri.split('/').pop();
+    if (!fileName) {
+      console.error('File name is undefined');
+      return null; // 파일 이름이 없을 경우 오류 처리
+    }
+  
+    const newUri = FileSystem.documentDirectory + fileName;
+  
+    try {
+      await FileSystem.copyAsync({
+        from: uri,
+        to: newUri,
+      });
+  
+      return newUri; // 저장된 이미지의 경로 반환
+    } catch (error) {
+      console.error('Failed to save image:', error);
+      return null; // 예외 발생 시 null 반환
+    }
+  }
   const router = useRouter();
   const isModal = router.canGoBack();
   const { db, addProfile, deleteAllProfiles } = useDb() as DbContextType;
@@ -85,8 +109,9 @@ export default function RegisterScreen() {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setNewProfile({ ...newProfile, image: result.assets[0].uri });
+      const savedUri = await saveImageToDisk(result.assets[0].uri); // 이미지를 디스크에 저장
+      setImage(savedUri); // 화면에 이미지를 표시하기 위해 상태 업데이트
+      setNewProfile({ ...newProfile, image: savedUri }); // 이미지 경로를 프로필에 설정
     }
   };
 
