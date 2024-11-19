@@ -2,13 +2,14 @@
   "expo": {
     "name": "IDBuddy",
     "slug": "idbuddy",
+    "newArchEnabled": true,
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "idbuddy",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash2.png",
+      "image": "./assets/images/Splash2.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

@@ -17,6 +17,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 const db = SQLite.openDatabaseAsync('profiles.db');
 
 export default function HomeScreen() {
+  const videoUrl = process.env.EXPO_PUBLIC_API_VIDEO as string;
   const [isloading, setLoading] = useState(true);
   const [isPressed, setPressed] = useState(false); // pressed 상태 관리
   const [isVideoLoaded, setVideoLoaded] = useState(false); // 영상 로드 상태 관리
@@ -47,52 +48,54 @@ export default function HomeScreen() {
 
     initializeDatabase();
   }, []);
-
-  const injectedJavaScript = `
-  document.querySelector('video').style.width = '100%';
-  document.querySelector('video').style.height = 'auto';
-  true;
-`;
-
-  // 영상 로드 완료 후 스타일 적용
+/*
   const handleWebViewLoadEnd = () => {
-    setVideoLoaded(true);
-  };
-
+    webViewRef.current?.injectJavaScript(`
+      const videoElement = document.querySelector('video');
+      if (videoElement) {
+        videoElement.style.width = '100%';
+        videoElement.style.height = 'auto';
+        videoElement.style.objectFit = 'cover'; // 비디오 크기를 화면에 맞게 조정
+      }
+      true;
+    `);
+  }
+*/
   return (
     <ThemedView style={styles.Container}>
-      {isPressed ? (
-        !isloading ? (
-          <WebView
-            style={[StyleSheet.absoluteFill, styles.webview, isVideoLoaded && styles.videoLoaded]} // 영상 로드 후 스타일 적용
-            source={{ uri: 'http://192.168.137.147:5001/api/video_feed' }}
-            scalesPageToFit={true}
-            injectedJavaScript={injectedJavaScript}
-            onLoadEnd={handleWebViewLoadEnd} // 영상 로드 완료 후 호출되는 핸들러
-          >
-            <View style={styles.logo}>
-              <Image
-                style={{ width: 40, height: 45 }}
-                source={require('@/assets/images/ID-B_logo.png')} // 로고 이미지 경로 설정
-                resizeMode="contain"
-              />
-            </View>
-            <View style={styles.chat_bubble}>
-              <Text style={styles.chat}>안녕하세요, Eunjin님! </Text>
-            </View>
-          </WebView>
+      <View style={styles.top}>
+        {isPressed ? (
+          !isloading ? (
+            <WebView
+              style={styles.topContent}
+              source={{ uri: videoUrl }}
+              //scalesPageToFit={true}
+              //onLoadEnd={handleWebViewLoadEnd} // 영상 로드 완료 후 호출되는 핸들러
+            >
+              <View style={styles.logo}>
+                <Image
+                  style={{ width: 40, height: 45 }}
+                  source={require('@/assets/images/ID-B_logo.png')} // 로고 이미지 경로 설정
+                  resizeMode="contain"
+                />
+              </View>
+              <View style={styles.chat_bubble}>
+                <Text style={styles.chat}>안녕하세요, Eunjin님! </Text>
+              </View>
+            </WebView>
+          ) : (
+            <ThemedView style={styles.topContent}>
+              <ActivityIndicator size="large" color="#4169e1" />
+              <ThemedText>로딩 중...</ThemedText>
+            </ThemedView>
+          )
         ) : (
-          <ThemedView style={styles.top}>
-            <ActivityIndicator size="large" color="#4169e1" />
-            <ThemedText>로딩 중...</ThemedText>
+          <ThemedView style={styles.topContent} lightColor="#f2f2f2" darkColor="#212529">
+            <MaterialCommunityIcons name="video-off" size={100} color="#4169e1" />
+            <ThemedText>카메라가 꺼져있습니다.</ThemedText>
           </ThemedView>
-        )
-      ) : (
-        <ThemedView style={[styles.top]} lightColor="#f2f2f2" darkColor="#212529">
-          <MaterialCommunityIcons name="video-off" size={100} color="#4169e1" />
-          <ThemedText>카메라가 꺼져있습니다.</ThemedText>
-        </ThemedView>
-      )}
+        )}
+      </View>
       <ThemedView style={styles.bottom}>
         <Pressable
           onPress={handlePress}
@@ -127,16 +130,27 @@ const styles = StyleSheet.create({
   top: {
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 7,
+    flex: 5.8,
+  },
+  topContent:{
+    flex:1, 
+    marginTop: Constants.statusBarHeight,
+    alignItems: 'center', 
+    justifyContent:'center',
+    width: '100%'
   },
   webview: {
     marginTop: Constants.statusBarHeight,
+    flexGrow:7,
+    height: '100%', 
+    width: '100%'
   },
   videoLoaded: {
     // 영상 로드 후 스타일을 추가할 부분
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // 예시: 로드된 후 배경색 변경
   },
   bottom: {
+    flex:1,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',

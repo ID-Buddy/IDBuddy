@@ -4,6 +4,8 @@ import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
 import axios from 'axios';
+//uriToBlob
+import getBlobFromUri from '@/components/getBlobFromUri';
 //type
 import { Profile } from '@/types/index';
 import { DbContextType } from '@/types/index';
@@ -14,6 +16,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 //constant
 export default function RegisterScreen() {
+  const registerUrl = process.env.EXPO_PUBLIC_API_REGISTER as string;
   //사진 확장자 
   const getFileExtension = (uri: string) => {
     const uriParts = uri.split('.');
@@ -39,8 +42,8 @@ export default function RegisterScreen() {
   const [isSelected, setSelected] = useState<boolean>(false);
   //서버에 보낼 이미지들
   const [sendImage, setSendImage] = useState<string>('');
-  const [uploading, setUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState('');
+  //const [uploading, setUploading] = useState(false);
+  //const [uploadMessage, setUploadMessage] = useState('');
 
 
   // 프로필 추가
@@ -58,6 +61,16 @@ export default function RegisterScreen() {
       return;
     }
     setAdded(true)
+    await addProfile(newProfile); // 프로필 추가
+        setNewProfile({
+          id: Date.now(),
+          image: '',
+          name: '',
+          relationship: '',
+          memo: '',
+          gender: '',
+          age: ''
+        }); // 입력 필드 초기화
   };
 
   const [image, setImage] = useState<string | null>(null);
@@ -65,7 +78,7 @@ export default function RegisterScreen() {
   // 단일 이미지 선택
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -79,7 +92,7 @@ export default function RegisterScreen() {
 
   const pickSendImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes:  ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 1,
     });
@@ -97,28 +110,19 @@ export default function RegisterScreen() {
     }
   
     // 업로드 중 상태 설정
-    setUploading(true);
-    setUploadMessage('Uploading...');
+    //setUploading(true);
+    //setUploadMessage('Uploading...');
   
     // FormData 생성
     const formData = new FormData();
-    const localUri = sendImage.replace('file://', ''); // "file://" 제거
-    console.log(sendImage);
-    console.log(localUri);
     let filetype = sendImage.substring(sendImage.lastIndexOf(".") + 1);
     const filename = `${String(newProfile.id)}.${filetype}`; // 파일 이름 설정
     console.log('파일 이름:', filename);
   
     try {
       // blob 객체 생성
-      const response = await fetch(localUri);
-      let blob = await response.blob();
-  
-      // 올바른 MIME 타입으로 재설정 (image/jpeg)
-      if (blob.type === 'text/plain' || !blob.type.startsWith('image/')) {
-        let mimeType = `image/jpeg`; // 항상 image/jpeg로 설정
-        blob = new Blob([blob], { type: mimeType });
-      }
+      // URI에서 Blob 객체 생성
+      const blob = await getBlobFromUri(sendImage) as Blob;
       console.log('MIME 타입:', blob.type); // MIME 타입 출력
   
       // FormData에 이미지 파일, 이름 추가
@@ -131,7 +135,7 @@ export default function RegisterScreen() {
       }
   
       // axios를 사용한 파일 업로드 요청 (Content-Type 자동 설정)
-      const res = await axios.post('http://192.168.137.147:5001/api/register', formData);
+      const res = await axios.post(registerUrl, formData);
   
       // 서버 응답 확인
       if (res.status === 200) {
@@ -156,8 +160,6 @@ export default function RegisterScreen() {
       alert('서버 요청 중 오류가 발생했습니다.');
     }
   };
-  
-  
   
   //프로필 등록 취소
   const cancelRegister = () => {
@@ -209,7 +211,7 @@ export default function RegisterScreen() {
                   />
                 </View>
               )}
-            <Pressable style={styles.add_image_btn}onPress={pickImage} >
+            <Pressable style={styles.add_image_btn} onPress={pickImage} >
               <Text style={styles.add_image_content}>사진 추가</Text>
             </Pressable>
           </View>
