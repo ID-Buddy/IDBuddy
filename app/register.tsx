@@ -5,18 +5,16 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
 import axios from 'axios';
 
+//file-system
 import * as FileSystem from 'expo-file-system';
-//uriToBlob
-import getBlobFromUri from '@/components/getBlobFromUri';
+
 //type
 import { Profile } from '@/types/index';
 import { DbContextType } from '@/types/index';
-
 //icon
-import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Entypo from '@expo/vector-icons/Entypo';
 
-//constant
 export default function RegisterScreen() {
   const registerUrl = process.env.EXPO_PUBLIC_API_REGISTER as string;
   // 이미지 저장 함수
@@ -85,16 +83,6 @@ export default function RegisterScreen() {
       return;
     }
     setAdded(true)
-    await addProfile(newProfile); // 프로필 추가
-        setNewProfile({
-          id: Date.now(),
-          image: '',
-          name: '',
-          relationship: '',
-          memo: '',
-          gender: '',
-          age: ''
-        }); // 입력 필드 초기화
   };
 
   const [image, setImage] = useState<string | null>(null);
@@ -133,38 +121,44 @@ export default function RegisterScreen() {
       alert("이미지를 추가하세요!");
       return;
     }
-  
-    // 업로드 중 상태 설정
-    //setUploading(true);
-    //setUploadMessage('Uploading...');
-  
+
     // FormData 생성
     const formData = new FormData();
-    let filetype = sendImage.substring(sendImage.lastIndexOf(".") + 1);
+    let filetype = sendImage.substring(sendImage.lastIndexOf(".") + 1).toLowerCase();
     const filename = `${String(newProfile.id)}.${filetype}`; // 파일 이름 설정
-    console.log('파일 이름:', filename);
-  
+
+    // MIME 타입 추론
+    let mimeType = 'image/jpeg'; // 기본값
+    if (filetype === 'png') {
+      mimeType = 'image/png';
+    } else if (filetype === 'jpg' || filetype === 'jpeg') {
+      mimeType = 'image/jpeg';
+    }
+
+    // FormData에 필드 추가
+    formData.append('name', String(newProfile.id));
+    // JSON 형태로 추가, append할 때 string이나 blob 객체만 된다고 하는데 왜 이 형식만 정상적으로 수행되는지 모르겠음.
+    formData.append('file', {
+      uri: sendImage,
+      type: mimeType,
+      name: filename,
+    });
+
+    // FormData의 실제 내용을 확인 (디버깅)
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+
     try {
-      // blob 객체 생성
-      // URI에서 Blob 객체 생성
-      const blob = await getBlobFromUri(sendImage) as Blob;
-      console.log('MIME 타입:', blob.type); // MIME 타입 출력
-  
-      // FormData에 이미지 파일, 이름 추가
-      formData.append('name', String(newProfile.id));
-      formData.append('file', blob, filename);
-  
-      // FormData의 실제 내용을 확인
-      for (let pair of formData.entries()) {
-        console.log(`${pair[0]}:`, pair[1]);
-      }
-  
       // axios를 사용한 파일 업로드 요청 (Content-Type 자동 설정)
-      const res = await axios.post(registerUrl, formData);
-  
+      const res = await axios.post(registerUrl, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       // 서버 응답 확인
       if (res.status === 200) {
-        alert(res.data.message || '등록이 성공적으로 이루어졌습니다!');
+        alert(res.data || '등록이 성공적으로 이루어졌습니다!');
         await addProfile(newProfile); // 프로필 추가
         setNewProfile({
           id: Date.now(),
@@ -177,14 +171,15 @@ export default function RegisterScreen() {
         }); // 입력 필드 초기화
         router.back();
       } else {
-        alert(res.data.message || '이미지 업로드 실패');
+        alert(res.data || '이미지 업로드 실패');
       }
-  
+
     } catch (error) {
       console.error('업로드 오류:', error);
       alert('서버 요청 중 오류가 발생했습니다.');
     }
   };
+
   
   //프로필 등록 취소
   const cancelRegister = () => {
@@ -276,19 +271,40 @@ export default function RegisterScreen() {
               value={newProfile.memo}
               placeholderTextColor = '#ccc'
               onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
-            />
+            />image
           </View>
           <Button title="완료" onPress={handleAddProfile} />
         
         </View> : (
           <View style={styles.register_container}>
-            <Text>얼굴 등록</Text>
-            <Text>정면인 사진</Text>
-            
-            <Pressable onPress={pickSendImage}>
+            <Text style={styles.e_g_title}>얼굴 등록</Text>
+            <View style={styles.e_g_content}>
+              <Entypo name="info-with-circle" size={24} color="#4169e1" />
+              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!</Text>
+            </View>
+            <View style={styles.e_g_img_container}>
+              <View>
+                <Text>올바른 예시</Text>
+                <Image
+                        style={styles.e_g_img}
+                        source={require('@/assets/images/e.g_img1.png')} // 로고 이미지 경로 설정
+                        resizeMode="contain"
+                />
+              </View>
+              <View>
+                <Text>잘못된 예시</Text>
+                <Image
+                        style={styles.e_g_img}
+                        source={require('@/assets/images/e.g_img2.png')} // 로고 이미지 경로 설정
+                        resizeMode="contain"
+                />
+              </View>
+            </View>
+              
+            <Pressable  onPress={pickSendImage}>
               {sendImage ? <Image source={{ uri: sendImage }} style={styles.sendImage} /> :(
-                <View>  
-                  <MaterialCommunityIcons name="tooltip-image" size={100} color="black" />
+                <View style={{padding: 100}}>  
+                  <MaterialCommunityIcons name="message-image-outline" size={100} color="#c8c8c8" />
                 </View>
               )}
             </Pressable>
@@ -296,16 +312,15 @@ export default function RegisterScreen() {
               onPress={uploadImage}
               style={[
                 styles.button,
-                { backgroundColor: isSelected ? '#4CAF50': '#D3D3D3'}, // 비활성화되면 회색, 활성화되면 초록색
+                { backgroundColor: isSelected ? '#7690DE': '#c8c8c8'}, // 비활성화되면 회색, 활성화되면 초록색
                 { opacity: isSelected ? 1 : 0.5 },  // 비활성화되면 버튼이 흐릿해짐
               ]}
               disabled={!isSelected}
             >
-              <Text>동록 완료</Text>
+              <Text style={styles.btn_text}>사진 등록하기</Text>
             </Pressable>
           </View>
         )}
-          
       </ScrollView>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
@@ -314,82 +329,119 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-    button:{
-      width: '80%',
-      height: 50,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    sendImage:{
-      margin: 2,
-      width: 300,
-      height: 300,
-    },
-    register_container: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    container :{
-      flex: 1, 
-      backgroundColor: '#f2f2f2',
-      paddingHorizontal: 5,
-    },
-    inputContainer: {
+  btn_text: {
+    fontSize: 16,
+  },
+  e_g_img_container:{
+    marginTop: 20,
+    flexDirection: 'row',
+    flex:1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 13,
+  },
+  e_g_img:{
+    width: 200,
+    height: 200,
+  },
+  e_g_content:{
+    flexDirection: 'row',
+    alignItems : 'center',
+    alignSelf :'flex-start',
+  },
+  e_g_title:{
+    color: '#4169e1',
+    fontSize: 30,
+    alignSelf: 'flex-start',
+    marginVertical: 10,
+    fontWeight: 'bold',
+  },
+  text_content:{
+    marginLeft: 10,
+    fontSize: 15,
+  },
+  button:{
+    marginTop: 30,
+    width: '80%',
+    borderRadius: 13,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+
+  },
+  sendImage:{
+    paddingVertical: 20,
+    width: 300,
+    height: 300,
+  },
+  register_container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  container :{
+    flex: 1, 
+    backgroundColor: '#f2f2f2',
+    paddingHorizontal: 5,
+  },
+  inputContainer: {
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'white',
+    paddingBottom : 160,
+  },
+  input: {
+      borderBottomWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
       padding: 10,
-      borderRadius: 10,
-      backgroundColor: 'white',
-      paddingBottom : 160,
-    },
-    input: {
-        borderBottomWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        padding: 10,
-        marginBottom: 10,
-        
-    },
-    input_memo: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        padding: 10,
-        marginBottom: 10,
-        height: 100,
-    },
-    image_container:{
-      paddingTop: 15,
-      marginBottom: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    image: {
-      borderRadius: 100,
-      width: 200,
-      height: 200,
-    },
-    default_img: {
-      paddingTop: 80,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 100,
-      width: 200,
-      height: 200,
-      backgroundColor: '#B9D5FF',
-      overflow: 'hidden',
-    },
-    cancel:{
-      fontSize: 17,
-      color: '#4169E1',
-    },
-    add_image_content:{
-      fontSize: 17,
-      color: '#4169E1',
-      textAlign:'center',
-    },
-    add_image_btn:{
-      marginBottom: 3,
-      marginTop: 9,
-    },
+      marginBottom: 10,
+      
+  },
+  input_memo: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 10,
+      height: 100,
+  },
+  image_container:{
+    paddingTop: 15,
+    marginBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: {
+    borderRadius: 100,
+    width: 200,
+    height: 200,
+  },
+  default_img: {
+    paddingTop: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+    width: 200,
+    height: 200,
+    backgroundColor: '#B9D5FF',
+    overflow: 'hidden',
+  },
+  cancel:{
+    fontSize: 17,
+    color: '#4169E1',
+  },
+  add_image_content:{
+    fontSize: 17,
+    color: '#4169E1',
+    textAlign:'center',
+  },
+  add_image_btn:{
+    marginBottom: 3,
+    marginTop: 9,
+  },
   
 });

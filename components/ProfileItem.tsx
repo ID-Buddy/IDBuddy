@@ -2,12 +2,10 @@ import React from 'react';
 import {Link} from 'expo-router';
 import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
 
+//type
 import { Profile } from '@/types/index';
 
 export default function ProfileItem({id,image,name,relationship, memo, gender, age}:Profile){
-  if (image){
-    console.log(image);
-  }
   return(
     <View style={styles.container} >
     <Link 

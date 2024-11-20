@@ -9,7 +9,7 @@
     "scheme": "idbuddy",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/Splash2.png",
+      "image": "./assets/images/splash2.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
