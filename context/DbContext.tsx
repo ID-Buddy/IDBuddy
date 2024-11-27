@@ -18,7 +18,7 @@ export const useDb = () => {
 export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null); // 데이터베이스 객체
   const [profiles, setProfiles] = useState<Profile[]>([]); // 프로필 데이터
-
+  const [profileInfo, setProfileInfo] = useState<Profile[]>([]);//특정 프로필 데이터
   useEffect(() => {
     const initializeDatabase = async () => {
       const database = await SQLite.openDatabaseAsync('profiles.db');
@@ -50,6 +50,15 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
       );
       fetchProfiles(db); // 프로필 추가 후 상태 업데이트
     }
+  };
+
+  // 프로필 id로 검색
+  const fetchProfileById = async (id: number) => {
+      if (db) {
+        const firstRow = await db.getFirstAsync(
+          'SELECT * FROM profiles WHERE id = ?;',[id]);
+        console.log(firstRow)
+      };
   };
 
   // 모든 프로필 데이터 삭제

@@ -78,8 +78,8 @@ export default function RegisterScreen() {
       alert('올바른 나이를 입력해주세요'); // 필수 항목이 비어있을 경우 경고 메시지
       return; // 추가를 진행하지 않음
     }
-    if(newProfile.gender != "여자" && newProfile.gender != "남자"){
-      alert('성별을 정확하게 기입해주세요.("여자" 또는 남자"');
+    if(newProfile.gender != "여자" && newProfile.gender != "남자" && newProfile.gender != "여" && newProfile.gender !="남"){
+      alert('성별을 정확하게 기입해주세요.("여자/남자" 또는 여/남');
       return;
     }
     setAdded(true)
@@ -136,7 +136,7 @@ export default function RegisterScreen() {
     }
 
     // FormData에 필드 추가
-    formData.append('name', String(newProfile.id));
+    formData.append('name', String(newProfile.name));
     // JSON 형태로 추가, append할 때 string이나 blob 객체만 된다고 하는데 왜 이 형식만 정상적으로 수행되는지 모르겠음.
     formData.append('file', {
       uri: sendImage,
@@ -144,10 +144,6 @@ export default function RegisterScreen() {
       name: filename,
     });
 
-    // FormData의 실제 내용을 확인 (디버깅)
-    for (let pair of formData.entries()) {
-      console.log(`${pair[0]}:`, pair[1]);
-    }
 
     try {
       // axios를 사용한 파일 업로드 요청 (Content-Type 자동 설정)
@@ -432,7 +428,7 @@ const styles = StyleSheet.create({
   },
   cancel:{
     fontSize: 17,
-    color: '#4169E1',
+    color: '#4169e1',
   },
   add_image_content:{
     fontSize: 17,

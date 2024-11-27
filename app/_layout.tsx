@@ -50,6 +50,10 @@ export default function RootLayout() {
                 name="profile"
                 options={{}} 
               />
+              <Stack.Screen 
+                name="editprofile"
+                options={{}}
+              />
             <Stack.Screen name="+not-found" />
           </Stack>
         </SearchContextProvider>

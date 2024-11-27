@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image, Pressable, Button} from 'react-native';
 import { Profile } from '@/types/index';
-import {Stack, useLocalSearchParams, useRouter} from 'expo-router';
+import {Stack, useLocalSearchParams, useRouter, Link} from 'expo-router';
 import { useDb } from '@/context/DbContext';
 import { DbContextType } from '@/types/index';
 //Icon
@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 export default function profileScreen(){
     const router = useRouter();
     const {deleteProfile} = useDb() as DbContextType;
-    const gotoPeopelScreen= () => {
+    const gotoPeopleScreen= () => {
       router.back();
     }
     const params = useLocalSearchParams();
@@ -27,18 +27,30 @@ export default function profileScreen(){
       await deleteProfile(id as number)
       router.back();
     };
+    const handleEditProfile = () => {
+      router.navigate('/editprofile');
+    };
     return(
       <>
       <Stack.Screen 
         options={{ 
             title : '',
             headerLeft: () => (
-              <Pressable onPress={gotoPeopelScreen} >
-                <Ionicons name="chevron-back" size={24} color="#4169e1" />
+              <Pressable onPress={gotoPeopleScreen} >
+                <Ionicons name="chevron-back" size={25} color="#4169e1" />
               </Pressable>
             ),
+            headerRight: () => (
+              <Link 
+                href={{
+                  pathname: "/editprofile",
+                  params: {id:id,image:image,name:name,relationship:relationship, memo:memo, gender:gender, age:age}
+                }}>
+                  <Text style={styles.edit_btn}>편집</Text>
+                </Link>
+            ),
             headerStyle:{
-              backgroundColor: '#f2f2f2'
+              backgroundColor: '#f2f2f2',
             },
             headerShadowVisible: false,
         }}/> 
@@ -74,6 +86,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems:'center'
   }, 
+  edit_btn:{
+    fontSize: 19,
+    color: "#4169e1",
+  },
   ref:{
     color: '#838383',
   },

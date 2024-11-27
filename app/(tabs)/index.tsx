@@ -1,6 +1,6 @@
 import { ActivityIndicator, Image, StyleSheet, Pressable, View, Text } from 'react-native';
-import React, { useEffect, useState } from 'react';
-
+import React, { useEffect, useState, useRef } from 'react';
+import * as Speech from 'expo-speech';
 //websocket
 import {io} from 'socket.io-client';
 
@@ -23,14 +23,19 @@ export default function HomeScreen() {
   const [isVideoLoaded, setVideoLoaded] = useState(false); // 영상 로드 상태 관리
 
   //웹 소켓과 관련된 변수
-  const [message, setMessage] = useState<string>('서버와 연결 대기 중...');
+  const [message, setMessage] = useState<string>('');
+  const lastMessageRef = useRef<string>('');
+
   const [recognitionResult, setRecognitionResult] = useState<string | null>(null);
+  const [lastReconitionResult, setReconitionResult] = useState<string>('');
+
   const [socket, setSocket] = useState<any>(null); // socket 상태 관리
   const handlePress = () => {
     const newPressedState = !isPressed // 새로운 pressed 상태 
     setPressed(newPressedState); // pressed 상태 업데이트
     if (newPressedState) {
-      setMessage('서버와 연결 대기 중...');
+      const text = '서버와 연결 대기 중...'
+      setMessage(text);
       connectToServer();
     }
     else{
@@ -46,8 +51,9 @@ export default function HomeScreen() {
 
     // 소켓이 연결되었을 때
     newSocket.on('connect', () => {
-      console.log('서버에 연결되었습니다.');
-      setMessage('서버에 연결되었습니다.');
+      const text = '서버에 연결되었습니다.'
+      console.log(text);
+      setMessage(text);
     });
 
     // 서버에서 'response' 이벤트 수신
@@ -60,19 +66,27 @@ export default function HomeScreen() {
     newSocket.on('recognition_result', (data: { status: string; message: string }) => {
       console.log('서버에서 얼굴 인식 결과 수신:', data);
       if (data.status === 'success') {
+        console.log(data.message);
         setRecognitionResult(data.message);
+      } 
+      else {
+        console.log('데이터 수신 실패 : ', data);
       }
     });
 
     // 소켓 연결 오류 핸들링
     newSocket.on('connect_error', (error: any) => {
       console.log('소켓 연결 오류:', error);
-      setMessage('소켓 연결 오류 발생.');
+      const text = '소켓 연결 오류 발생. 카메라 연결을 종료해주세요';
+      setMessage(text);
+
     });
 
     // 소켓 재연결 시도
     newSocket.on('reconnect_attempt', () => {
       console.log('소켓 재연결 시도 중...');
+      const text = '소켓 재연결 시도 중...';
+      setMessage(text);
     });
 
 
@@ -126,6 +140,31 @@ export default function HomeScreen() {
     `);
   }
 */
+  // message 값이 변경될 때 TTS 실행
+  useEffect(() => {
+    if (message && lastMessageRef.current!= message) {
+      Speech.speak(message, {
+        language: 'ko-KR',
+        pitch: 1.0,
+        rate: 1.0,
+      });
+    }
+    lastMessageRef.current = message;
+  }, [message]); 
+
+  /*
+    // recognitionResult 결과 값이 변경될 때 TTS 실행
+    useEffect(() => {
+      if (recognitionResult) {
+        Speech.speak(recognitionResult, {
+          language: 'ko-KR',
+          pitch: 1.0,
+          rate: 1.0,
+        });
+      }
+    }, [recognitionResult]);
+*/
+
   return (
     <>
     <View style={styles.Container}>
@@ -146,10 +185,10 @@ export default function HomeScreen() {
             </View>
             <View style={styles.chat_bubble}>
               { message ? (
-                <>
-                <Text style={styles.chat}>{message}</Text>
-                {recognitionResult && <Text style={styles.chat}>{recognitionResult}</Text>}
-                </>
+                <View style={styles.message_container}>
+                  <Text style={styles.chat}>{message}</Text>
+                  {recognitionResult && <Text style={styles.chat}>{recognitionResult}</Text>}
+                </View>
               ):(
                 <Text style={styles.chat}>안녕하세요, Eunjin님!</Text>
               )}
@@ -240,6 +279,9 @@ logo: {
     height: 4,
   },
   elevation: 10,
+},
+message_container:{
+  
 },
 chat_bubble: {
   marginTop: Constants.statusBarHeight,
