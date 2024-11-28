@@ -26,8 +26,8 @@ export default function HomeScreen() {
   const [message, setMessage] = useState<string>('');
   const lastMessageRef = useRef<string>('');
 
-  const [recognitionResult, setRecognitionResult] = useState<string | null>(null);
-  const [lastReconitionResult, setReconitionResult] = useState<string>('');
+  const [recognitionResult, setRecognitionResult] = useState<string>('');
+  const lastReconitionResult = useRef<string>('');
 
   const [socket, setSocket] = useState<any>(null); // socket 상태 관리
   const handlePress = () => {
@@ -101,7 +101,7 @@ export default function HomeScreen() {
       console.log('서버와의 연결이 끊어졌습니다.');
       setMessage('서버와의 연결이 끊어졌습니다.');
       setSocket(null);
-      setRecognitionResult(null);
+      setRecognitionResult('');
     }
   };
 
@@ -122,7 +122,7 @@ export default function HomeScreen() {
           memo TEXT NOT NULL
         );
       `);
-  
+
     };
     initializeDatabase();
     setLoading(false); 
@@ -149,8 +149,17 @@ export default function HomeScreen() {
         rate: 1.0,
       });
     }
+    if (recognitionResult && lastReconitionResult.current!=recognitionResult ) {
+      Speech.speak(recognitionResult, {
+        language: 'ko-KR',
+        pitch: 1.0,
+        rate: 1.0,
+      });
+    }
+    lastReconitionResult.current = recognitionResult;
     lastMessageRef.current = message;
-  }, [message]); 
+  }, [message, recognitionResult]); 
+
 
   /*
     // recognitionResult 결과 값이 변경될 때 TTS 실행

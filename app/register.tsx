@@ -63,7 +63,7 @@ export default function RegisterScreen() {
   //등록할 이미지 골랐나
   const [isSelected, setSelected] = useState<boolean>(false);
   //서버에 보낼 이미지들
-  const [sendImage, setSendImage] = useState<string>('');
+  const [sendImages, setSendImages] = useState<string[]>([]);
   //const [uploading, setUploading] = useState(false);
   //const [uploadMessage, setUploadMessage] = useState('');
 
@@ -106,55 +106,57 @@ export default function RegisterScreen() {
   const pickSendImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
+      
       allowsEditing: true,
       quality: 1,
     });
-
-    if (!result.canceled) {
-      setSendImage(result.assets[0].uri);
-      setSelected(true);
+    if (!result.canceled && result.assets) {
+      // 선택한 이미지들의 URI 배열을 sendImages 상태에 추가
+      const uris = result.assets.map((asset) => asset.uri);
+      setSendImages((prev) => [...prev, ...uris]); // 기존 이미지에 추가
+      setSelected(true); // 이미지 선택 상태 업데이트
     }
   };
 
   const uploadImage = async () => {
-    if (!isSelected) {
+    if (!isSelected || sendImages.length === 0) {
       alert("이미지를 추가하세요!");
       return;
     }
 
     // FormData 생성
     const formData = new FormData();
-    let filetype = sendImage.substring(sendImage.lastIndexOf(".") + 1).toLowerCase();
-    const filename = `${String(newProfile.id)}.${filetype}`; // 파일 이름 설정
+    formData.append('id', newProfile.id); //id 추가
+    formData.append('name', String(newProfile.name)); //이름 추가
+    
+    // 이미지 uri Formdata에 추가 
+    sendImages.forEach((image, index) => {
+      const filetype = image.substring(image.lastIndexOf(".") + 1).toLowerCase();
+      const filename = `${String(newProfile.id)}_${index + 1}.${filetype}`; // 파일 이름 설정
 
-    // MIME 타입 추론
-    let mimeType = 'image/jpeg'; // 기본값
-    if (filetype === 'png') {
-      mimeType = 'image/png';
-    } else if (filetype === 'jpg' || filetype === 'jpeg') {
-      mimeType = 'image/jpeg';
-    }
-
-    // FormData에 필드 추가
-    formData.append('name', String(newProfile.name));
-    // JSON 형태로 추가, append할 때 string이나 blob 객체만 된다고 하는데 왜 이 형식만 정상적으로 수행되는지 모르겠음.
-    formData.append('file', {
-      uri: sendImage,
-      type: mimeType,
-      name: filename,
-    });
-
-
+      // MIME 타입 추론
+      let mimeType = 'image/jpeg'; // 기본값
+      if (filetype === 'png') {
+        mimeType = 'image/png';
+      } else if (filetype === 'jpg' || filetype === 'jpeg') {
+        mimeType = 'image/jpeg';
+      }
+      formData.append('file', {
+        uri: image,
+        type: mimeType,
+        name: filename,
+      }); 
+    })
     try {
       // axios를 사용한 파일 업로드 요청 (Content-Type 자동 설정)
-      const res = await axios.post(registerUrl, formData, {
+      const res = await axios.post('http://your_server_address:5001/api/register', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       // 서버 응답 확인
       if (res.status === 200) {
-        alert(res.data || '등록이 성공적으로 이루어졌습니다!');
+        alert('등록이 성공적으로 이루어졌습니다!');
         await addProfile(newProfile); // 프로필 추가
         setNewProfile({
           id: Date.now(),
@@ -165,11 +167,13 @@ export default function RegisterScreen() {
           gender: '',
           age: ''
         }); // 입력 필드 초기화
+        setAdded(false);
+        setSelected(false);
+        setSendImages([]); 
         router.back();
       } else {
         alert(res.data || '이미지 업로드 실패');
       }
-
     } catch (error) {
       console.error('업로드 오류:', error);
       alert('서버 요청 중 오류가 발생했습니다.');
@@ -182,7 +186,7 @@ export default function RegisterScreen() {
     setNewProfile({ id: Date.now(), image: '', name: '', relationship: '', memo: '', gender: '', age: ''}); // 입력 필드 초기화
     setAdded(false);
     setSelected(false);
-    setSendImage('');
+    setSendImages([]);
     router.back();
   };
 
@@ -267,7 +271,7 @@ export default function RegisterScreen() {
               value={newProfile.memo}
               placeholderTextColor = '#ccc'
               onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
-            />image
+            />
           </View>
           <Button title="완료" onPress={handleAddProfile} />
         
@@ -296,9 +300,15 @@ export default function RegisterScreen() {
                 />
               </View>
             </View>
-              
             <Pressable  onPress={pickSendImage}>
-              {sendImage ? <Image source={{ uri: sendImage }} style={styles.sendImage} /> :(
+              {sendImages.length != 0 ? 
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {sendImages.map((image, index) => (
+                  <View key={index} style={styles.imageWrapper}>
+                    <Image source={{ uri: image }} style={styles.carouselImage} />
+                  </View>
+                ))}
+              </ScrollView> :(
                 <View style={{padding: 100}}>  
                   <MaterialCommunityIcons name="message-image-outline" size={100} color="#c8c8c8" />
                 </View>
@@ -308,7 +318,7 @@ export default function RegisterScreen() {
               onPress={uploadImage}
               style={[
                 styles.button,
-                { backgroundColor: isSelected ? '#7690DE': '#c8c8c8'}, // 비활성화되면 회색, 활성화되면 초록색
+                { backgroundColor: isSelected ? '#7690DE': '#c8c8c8'}, 
                 { opacity: isSelected ? 1 : 0.5 },  // 비활성화되면 버튼이 흐릿해짐
               ]}
               disabled={!isSelected}
@@ -439,5 +449,13 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     marginTop: 9,
   },
-  
+  imageWrapper: {
+    marginHorizontal: 10,
+    position: 'relative',
+  },
+  carouselImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+  },
 });
