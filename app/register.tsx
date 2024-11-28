@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { Image, Platform, View, Button, TextInput, StyleSheet,Pressable,KeyboardAvoidingView,ScrollView, Text,Keyboard,TouchableWithoutFeedback } from 'react-native';
 import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -67,7 +67,16 @@ export default function RegisterScreen() {
   //const [uploading, setUploading] = useState(false);
   //const [uploadMessage, setUploadMessage] = useState('');
 
-
+  useEffect(() => {
+    // sendImages 상태가 변경될 때마다 실행
+    console.log('Updated sendImages:', sendImages);
+  }, [sendImages]);
+  
+  useEffect(() => {
+    // isSelected 상태가 변경될 때마다 실행
+    console.log('Updated isSelected:', isSelected);
+  }, [isSelected]);
+  
   // 프로필 추가
   const handleAddProfile = async () => {
     if (!newProfile.name || !newProfile.relationship || !newProfile.memo || !newProfile.gender || !newProfile.age) {
@@ -106,8 +115,7 @@ export default function RegisterScreen() {
   const pickSendImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      
-      allowsEditing: true,
+      allowsMultipleSelection: true,
       quality: 1,
     });
     if (!result.canceled && result.assets) {
@@ -118,15 +126,16 @@ export default function RegisterScreen() {
     }
   };
 
+
   const uploadImage = async () => {
+    console.log('here');
     if (!isSelected || sendImages.length === 0) {
       alert("이미지를 추가하세요!");
       return;
     }
-
     // FormData 생성
     const formData = new FormData();
-    formData.append('id', newProfile.id); //id 추가
+    formData.append('id', String(newProfile.id)); //id 추가
     formData.append('name', String(newProfile.name)); //이름 추가
     
     // 이미지 uri Formdata에 추가 
@@ -149,7 +158,7 @@ export default function RegisterScreen() {
     })
     try {
       // axios를 사용한 파일 업로드 요청 (Content-Type 자동 설정)
-      const res = await axios.post('http://your_server_address:5001/api/register', formData, {
+      const res = await axios.post(registerUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -194,6 +203,9 @@ export default function RegisterScreen() {
     Keyboard.dismiss(); // 키보드 숨기기
   };
 
+  const handlefun = () =>{
+    console.log('here!');
+  };
   return (
     <>
     <Stack.Screen 
@@ -280,7 +292,7 @@ export default function RegisterScreen() {
             <Text style={styles.e_g_title}>얼굴 등록</Text>
             <View style={styles.e_g_content}>
               <Entypo name="info-with-circle" size={24} color="#4169e1" />
-              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!</Text>
+              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!(최대 3장)</Text>
             </View>
             <View style={styles.e_g_img_container}>
               <View>
@@ -300,31 +312,36 @@ export default function RegisterScreen() {
                 />
               </View>
             </View>
-            <Pressable  onPress={pickSendImage}>
-              {sendImages.length != 0 ? 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {sendImages.map((image, index) => (
-                  <View key={index} style={styles.imageWrapper}>
-                    <Image source={{ uri: image }} style={styles.carouselImage} />
-                  </View>
-                ))}
-              </ScrollView> :(
-                <View style={{padding: 100}}>  
-                  <MaterialCommunityIcons name="message-image-outline" size={100} color="#c8c8c8" />
-                </View>
-              )}
+          
+            {sendImages.length != 0 ? 
+            <ScrollView horizontal = {true}>
+            {sendImages.map((image, index) => (
+              <View key={index} style={styles.imageWrapper}>
+                <Image source={{ uri: image }} style={styles.carouselImage} />
+              </View>
+            ))}
+          </ScrollView> :(
+            <Pressable onPress={pickSendImage}>
+            <View style={{padding: 100}}>  
+              <MaterialCommunityIcons name="message-image-outline" size={100} color="#c8c8c8" />
+            </View>
             </Pressable>
-            <Pressable
-              onPress={uploadImage}
-              style={[
-                styles.button,
-                { backgroundColor: isSelected ? '#7690DE': '#c8c8c8'}, 
-                { opacity: isSelected ? 1 : 0.5 },  // 비활성화되면 버튼이 흐릿해짐
-              ]}
-              disabled={!isSelected}
-            >
-              <Text style={styles.btn_text}>사진 등록하기</Text>
-            </Pressable>
+          )}
+          
+          <Pressable
+            onPress={() => {
+              uploadImage();
+            }}
+            style={[
+              styles.button,
+              { backgroundColor: isSelected ? '#7690DE': '#c8c8c8'}, 
+              { opacity: isSelected ? 1 : 0.5 },  // 비활성화되면 버튼이 흐릿해짐
+            ]}
+            disabled={isSelected === false}
+          >
+            <Text style={styles.btn_text}>사진 등록하기</Text>
+          </Pressable>
+            
           </View>
         )}
       </ScrollView>

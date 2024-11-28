@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, View } from 'react-native';
+import { Button, View, ScrollView, Text } from 'react-native';
 import * as Speech from 'expo-speech';
 
 export default function App() {
@@ -11,8 +11,21 @@ export default function App() {
     });
   };
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Button title="말하기" onPress={speak} />
-    </View>
+    <View style={{flexDirection: 'row', flex: 1, marginTop: 100,}}>
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+          <Text>asdasdasd</Text>
+        </ScrollView>
+      </View>
   );
 }
