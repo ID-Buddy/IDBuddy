@@ -298,17 +298,17 @@ export default function RegisterScreen() {
               <View>
                 <Text>올바른 예시</Text>
                 <Image
-                        style={styles.e_g_img}
-                        source={require('@/assets/images/e.g_img1.png')} // 로고 이미지 경로 설정
-                        resizeMode="contain"
+                  style={styles.e_g_img}
+                  source={require('@/assets/images/e.g_img1.png')} // 로고 이미지 경로 설정
+                  resizeMode="contain"
                 />
               </View>
               <View>
                 <Text>잘못된 예시</Text>
                 <Image
-                        style={styles.e_g_img}
-                        source={require('@/assets/images/e.g_img2.png')} // 로고 이미지 경로 설정
-                        resizeMode="contain"
+                  style={styles.e_g_img}
+                  source={require('@/assets/images/e.g_img2.png')} // 로고 이미지 경로 설정
+                  resizeMode="contain"
                 />
               </View>
             </View>
