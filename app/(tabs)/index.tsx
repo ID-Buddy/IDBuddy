@@ -207,7 +207,7 @@ export default function HomeScreen() {
     lastMessageRef.current = message;
   }, [message, recognitionResult]); 
 
-  // 프로필 하단에 띄우기
+  // 프로필 가져오기
   useEffect(() => {
     const fetchData = async (id: number) => {
       const profile = await fetchProfileById(id); // 특정 ID로 검색
@@ -239,6 +239,12 @@ export default function HomeScreen() {
             <WebView
               style={styles.webview}
               source={{ uri: videoUrl }}
+              startInLoadingState={true} // 로딩 상태가 시작되면 로딩 화면 표시
+              renderLoading={() => (
+                <View style={styles.topContent}>
+                  <ActivityIndicator size="large" color="#4169e1" />
+                </View>
+              )}
             />
             {/* 오버레이 콘텐츠 */}
             <View style={styles.logo}>
@@ -257,6 +263,9 @@ export default function HomeScreen() {
               ):(
                 <Text style={styles.chat}>안녕하세요, Eunjin님!</Text>
               )}
+            </View>
+            <View style={{justifyContent: 'center',alignItems: 'center',backgroundColor: 'black', height: 50, width: 50, borderRadius: 100,}}>
+                <Text style ={{color: 'white'}}>{oneProfile?.name}</Text>
             </View>
             </>
         ) : (
