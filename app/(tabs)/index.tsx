@@ -1,26 +1,73 @@
 import { ActivityIndicator, Image, StyleSheet, Pressable, View, Text } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
+//Icon
+import AntDesign from '@expo/vector-icons/AntDesign';
 //websocket
 import {io} from 'socket.io-client';
-
 //DB
 import * as SQLite from 'expo-sqlite';
-
 //WebView
 import { WebView } from 'react-native-webview';
 import Constants from 'expo-constants';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+//dropdown
+import DropDownPicker from 'react-native-dropdown-picker';
+//db
+import { Profile } from '@/types/index';
 const db = SQLite.openDatabaseAsync('profiles.db');
+import { useDb } from '@/context/DbContext';
+import { DbContextType } from '@/types/index';
 
 export default function HomeScreen() {
-  const videoUrl = process.env.EXPO_PUBLIC_API_VIDEO as string;
+
+  const [oneProfile, setOneProfile] = useState<Profile|null>(null);
+  const {fetchProfileById} = useDb() as DbContextType;
+  const [videoUrl, setVideoUri] = useState<string>(process.env.EXPO_PUBLIC_API_VIDEO as string);
   const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string;
-  const [isLoading, setLoading] = useState(true);
-  const [isPressed, setPressed] = useState(false); // pressed 상태 관리
-  const [isVideoLoaded, setVideoLoaded] = useState(false); // 영상 로드 상태 관리
+  const [isLoading, setLoading] = useState<boolean>(true);
+  const [isPressed, setPressed] = useState<boolean>(false); // pressed 상태 관리
+
+  //드롭다운 관련된 변수 
+  const [open, setOpen] = useState<boolean>(false); // 드롭다운 열림 상태
+  const [value, setValue] = useState<string>('single');  // 현재 선택된 값
+  const [items, setItems] = useState([
+    { label: '싱글 모드', value: 'single'},
+    { label: '멀티 모드', value: 'multi'},
+  ]);
+
+  useEffect(()=>{
+    if (value == 'single'){
+      setVideoUri(process.env.EXPO_PUBLIC_API_VIDEO as string);
+    }
+    else if (value == 'multi'){
+      setVideoUri(process.env.EXPO_PUBLIC_API_VIDEO as string);
+    }
+  }, [value])
+
+  // 드롭다운의 label 값을 동적으로 변경하는 로직
+  useEffect(() => {
+    if (open) {
+      // 드롭다운이 열렸을 때 레이블 변경
+      setItems(prevItems =>
+        prevItems.map(item =>
+          item.value === 'single'
+            ? { ...item, label: '싱글 모드 ( 1대1 상황일 때 적합합니다. )' }
+            : item.value === 'multi'
+            ? { ...item, label: '멀티 모드 ( 여러 사람을 만날 때 적합합니다. )' }
+            : item
+        )
+      );
+    } else {
+      // 드롭다운이 닫혔을 때 원래 레이블로 되돌림
+      setItems([
+        { label: '싱글 모드', value: 'single' },
+        { label: '멀티 모드', value: 'multi' },
+      ]);
+    }
+  }, [open]);
 
   //웹 소켓과 관련된 변수
   const [message, setMessage] = useState<string>('');
@@ -160,19 +207,28 @@ export default function HomeScreen() {
     lastMessageRef.current = message;
   }, [message, recognitionResult]); 
 
-
-  /*
-    // recognitionResult 결과 값이 변경될 때 TTS 실행
-    useEffect(() => {
-      if (recognitionResult) {
-        Speech.speak(recognitionResult, {
-          language: 'ko-KR',
-          pitch: 1.0,
-          rate: 1.0,
-        });
+  // 프로필 하단에 띄우기
+  useEffect(() => {
+    const fetchData = async (id: number) => {
+      const profile = await fetchProfileById(id); // 특정 ID로 검색
+      if (profile) {
+        console.log('Fetched Profile:', profile);
+        setOneProfile(profile); // 검색된 프로필을 상태로 저장
+      } else {
+        console.warn(`Profile with ID ${id} not found`);
       }
-    }, [recognitionResult]);
-*/
+    };
+    if (recognitionResult && lastReconitionResult.current !== recognitionResult) {
+      const [idString, name] = recognitionResult.split(' '); // ID와 이름 분리
+      //const id = parseInt(idString, 10); // 문자열 ID를 숫자로 변환
+      const id = 1732793076660 
+      if (!isNaN(id)) {
+        fetchData(id); // 데이터 검색 함수 호출
+      } else {
+        console.warn('Invalid ID format in recognitionResult');
+      }
+    }
+  }, [recognitionResult]); 
 
   return (
     <>
@@ -212,31 +268,53 @@ export default function HomeScreen() {
       ) : (
         <View style={styles.topContent} >
           <MaterialCommunityIcons name="video-off" size={100} color="#4169e1" />
-          <Text>카메라가 꺼져있습니다.</Text>
+          <Text style={{fontSize: 18,}}>카메라가 꺼져있습니다.</Text>
         </View>
       )}
     </View>
     <View style={styles.bottom}>
-      <Pressable
-        onPress={handlePress}
-        style={({ pressed }) => [
-          {
-            backgroundColor: pressed ? '#4169e1' : 'white',
-            borderColor: pressed ? 'white' : '#4169e1',
-            borderWidth: pressed ? 0 : 3,
-            paddingLeft: !isPressed ? 5 : 0,
-          },
-          styles.play_btn,
-        ]}
-      >
-        {({ pressed }) => (
-          <Ionicons
-            name={pressed && isPressed ? 'stop' : !isPressed ? 'play' : 'stop'}
-            size={50}
-            color={pressed ? 'white' : '#4169e1'}
-          />
-        )}
-      </Pressable>
+      <View style ={styles.mode_btn}>
+        <DropDownPicker
+          open={open}
+          value={value}
+          items={items}
+          setOpen={setOpen}
+          setValue={setValue}
+          style={styles.dropdown}
+          textStyle={styles.text}
+          dropDownContainerStyle={{
+            alignSelf: 'flex-end',
+            width: '95%',
+            backgroundColor: "white",
+            borderColor: '#D0E3FF',
+          }}
+          selectedItemContainerStyle={{
+            backgroundColor: "#D0E3FF"
+          }}
+        />
+      </View>
+      <View style = {styles.video_btn}>
+        <Pressable
+          onPress={handlePress}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed ? '#4169e1' : 'white',
+              borderColor: pressed ? 'white' : '#4169e1',
+              borderWidth: pressed ? 0 : 3,
+              paddingLeft: !isPressed ? 5 : 0,
+            },
+            styles.play_btn,
+          ]}
+        >
+          {({ pressed }) => (
+            <Ionicons
+              name={pressed && isPressed ? 'stop' : !isPressed ? 'play' : 'stop'}
+              size={50}
+              color={pressed ? 'white' : '#4169e1'}
+            />
+          )}
+        </Pressable>
+      </View>
     </View>
   
   </>
@@ -244,75 +322,97 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-Container: {
-  flex: 5,
-  flexDirection: 'column',
-},
-topContent: {
-  flex: 1,
-  marginTop: Constants.statusBarHeight,
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '100%',
-},
-webview: {
-  marginTop: Constants.statusBarHeight,
-  flex: 1,
-  width: '100%',
-  height: '100%',
-},
-bottom: {
-  flex: 1,
-  flexDirection: 'row',
-  justifyContent: 'space-evenly',
-  alignItems: 'center',
-  backgroundColor: 'white',
-},
-play_btn: {
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 80,
-  height: 80,
-  borderRadius: 40, // borderRadius를 반으로 설정하여 원형으로 만듦
-},
-logo: {
-  marginTop: Constants.statusBarHeight,
-  position: 'absolute',
-  top: 15,
-  right: 15,
-  shadowColor: '#4169e1',
-  shadowOpacity: 0.5,
-  shadowRadius: 8,
-  shadowOffset: {
-    width: 0,
-    height: 4,
+  mode_text:{
+
   },
-  elevation: 10,
-},
-message_container:{
-  
-},
-chat_bubble: {
-  marginTop: Constants.statusBarHeight,
-  position: 'absolute',
-  top: 15,
-  right: 65,
-  backgroundColor: 'lightgray',
-  padding: 8,
-  paddingLeft: 10,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-  borderBottomLeftRadius: 20,
-  shadowColor: 'lightgray',
-  shadowOpacity: 0.5,
-  shadowRadius: 5,
-  shadowOffset: {
-    width: 0,
-    height: 4,
+  mode_container:{
+    backgroundColor: 'white',
   },
-  elevation: 10,
-},
-chat: {
-  fontSize: 15,
-},
+  dropdown: {
+    width: '30%',
+    alignSelf: 'flex-end',
+    borderColor: '#D0E3FF',
+    height: 50,
+  },
+  text: {
+    fontSize: 16,
+    color : '#4169E1',
+  },
+  video_btn:{
+   
+  },
+  mode_btn:{
+    width: '100%',
+    paddingTop : 5,
+    paddingRight: 5,
+  },
+  Container: {
+    flex: 4,
+    flexDirection: 'column',
+  },
+  topContent: {
+    flex: 1,
+    marginTop: Constants.statusBarHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  webview: {
+    marginTop: Constants.statusBarHeight,
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  bottom: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  play_btn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 80,
+    height: 80,
+    borderRadius: 40, // borderRadius를 반으로 설정하여 원형으로 만듦
+  },
+  logo: {
+    marginTop: Constants.statusBarHeight,
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    shadowColor: '#4169e1',
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 10,
+  },
+  message_container:{
+    
+  },
+  chat_bubble: {
+    marginTop: Constants.statusBarHeight,
+    position: 'absolute',
+    top: 15,
+    right: 65,
+    backgroundColor: 'lightgray',
+    padding: 8,
+    paddingLeft: 10,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    shadowColor: 'lightgray',
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 10,
+  },
+  chat: {
+    fontSize: 15,
+  },
 });

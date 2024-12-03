@@ -14,9 +14,12 @@ export interface Profile {
 export interface DbContextType {
     db: SQLite.SQLiteDatabase | null; // 데이터베이스 객체
     profiles: Profile[]; // 프로필 데이터 배열
+    profileInfo: Profile | null | undefined;
     addProfile: (profile: Profile) => Promise<void>; // 프로필 추가 함수
     deleteAllProfiles: () => Promise<void>; // 모든 프로필 삭제 함수
     deleteProfile: (id: number) => Promise<void>; // 모든 프로필 삭제 함수
+    fetchProfileById: (id:number) => Promise<Profile|null>; // ID로 특정 프로필 정보 가져오기
+
   }
 
 
