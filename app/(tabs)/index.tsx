@@ -4,6 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 //Icon
 import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 //websocket
 import {io} from 'socket.io-client';
 //DB
@@ -228,8 +229,12 @@ export default function HomeScreen() {
         console.warn('Invalid ID format in recognitionResult');
       }
     }
-  }, [recognitionResult]); 
+  }, [recognitionResult]);
 
+  // 결과 리스트 보러 가기(list 버튼 눌렀을 때의 핸들러) 
+  const listIconHandler =() => {
+    console.log('list');
+  };
   return (
     <>
     <View style={styles.Container}>
@@ -240,11 +245,6 @@ export default function HomeScreen() {
               style={styles.webview}
               source={{ uri: videoUrl }}
               startInLoadingState={true} // 로딩 상태가 시작되면 로딩 화면 표시
-              renderLoading={() => (
-                <View style={styles.topContent}>
-                  <ActivityIndicator size="large" color="#4169e1" />
-                </View>
-              )}
             />
             {/* 오버레이 콘텐츠 */}
             <View style={styles.logo}>
@@ -261,11 +261,15 @@ export default function HomeScreen() {
                   {recognitionResult && <Text style={styles.chat}>{recognitionResult}</Text>}
                 </View>
               ):(
-                <Text style={styles.chat}>안녕하세요, Eunjin님!</Text>
+                <Text style={styles.chat}>안녕하세요, 카메라를 연결 중입니다.</Text>
               )}
             </View>
-            <View style={{justifyContent: 'center',alignItems: 'center',backgroundColor: 'black', height: 50, width: 50, borderRadius: 100,}}>
-                <Text style ={{color: 'white'}}>{oneProfile?.name}</Text>
+            <View style={styles.list_icon_container_wrapper}>
+              <View style={styles.list_icon_container}>
+                <Pressable onPress={listIconHandler}>
+                  <FontAwesome6 name="list-ul" size={35} color="#4169e1" />
+                </Pressable>
+              </View>
             </View>
             </>
         ) : (
@@ -331,12 +335,37 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  mode_text:{
+  video_btn:{
 
   },
-  mode_container:{
-    backgroundColor: 'white',
+  list_icon_container_wrapper:{
+    position: 'absolute',
+    bottom: 10,
+    left: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'White', 
+    width: 63, 
+    height: 63,
+    borderRadius: 10,
+    shadowColor: 'black',
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 8,
   },
+  list_icon_container:{
+    width: 63,
+    height: 63,
+    borderRadius: 20,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   dropdown: {
     width: '30%',
     alignSelf: 'flex-end',
@@ -346,9 +375,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     color : '#4169E1',
-  },
-  video_btn:{
-   
+    fontWeight: 'bold',
   },
   mode_btn:{
     width: '100%',
@@ -371,6 +398,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
+    position: 'relative',
   },
   bottom: {
     flex: 1,
@@ -406,13 +434,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     right: 65,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'white',
     padding: 8,
     paddingLeft: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
-    shadowColor: 'lightgray',
+    shadowColor: 'black',
     shadowOpacity: 0.5,
     shadowRadius: 5,
     shadowOffset: {

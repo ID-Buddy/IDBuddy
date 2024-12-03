@@ -67,16 +67,6 @@ export default function RegisterScreen() {
   //const [uploading, setUploading] = useState(false);
   //const [uploadMessage, setUploadMessage] = useState('');
 
-  useEffect(() => {
-    // sendImages 상태가 변경될 때마다 실행
-    console.log('Updated sendImages:', sendImages);
-  }, [sendImages]);
-  
-  useEffect(() => {
-    // isSelected 상태가 변경될 때마다 실행
-    console.log('Updated isSelected:', isSelected);
-  }, [isSelected]);
-  
   // 프로필 추가
   const handleAddProfile = async () => {
     if (!newProfile.name || !newProfile.relationship || !newProfile.memo || !newProfile.gender || !newProfile.age) {
@@ -278,7 +268,7 @@ export default function RegisterScreen() {
             />
             <TextInput
               style={styles.input_memo}
-              placeholder="메모"
+              placeholder="예) 머리 스타일, 얼굴 특징(얼굴에 큰 점이 있다 등)"
               multiline
               value={newProfile.memo}
               placeholderTextColor = '#ccc'
