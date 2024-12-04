@@ -2,9 +2,11 @@ import { ActivityIndicator, Image, StyleSheet, Pressable, View, Text } from 'rea
 import React, { useEffect, useState, useRef } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
+import {Link} from 'expo-router';
+import {Switch} from 'react-native-switch';
 //Icon
-import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 //websocket
 import {io} from 'socket.io-client';
 //DB
@@ -19,12 +21,11 @@ import DropDownPicker from 'react-native-dropdown-picker';
 //db
 import { Profile } from '@/types/index';
 import { Record } from '@/types/index';
-//const recordDb = SQLite.openDatabaseSync('records.db')
 import { useDb } from '@/context/DbContext';
 import { DbContextType } from '@/types/index';
 
 export default function HomeScreen() {
-
+  const [voiceOn, setVoiceOn] = useState<boolean>(true);
   const [oneProfile, setOneProfile] = useState<Profile|null>(null);
   const {fetchProfileById} = useDb() as DbContextType;
   const [videoUrl, setVideoUri] = useState<string>(process.env.EXPO_PUBLIC_API_VIDEO as string);
@@ -74,11 +75,8 @@ export default function HomeScreen() {
   //웹 소켓과 관련된 변수
   const [message, setMessage] = useState<string>('');
   const lastMessageRef = useRef<string>('');
-
   const [recognitionResult, setRecognitionResult] = useState<string>('');
   const lastReconitionResult = useRef<string>('');
-  const [idList, setIdList] = useState<string>('');
-
   const [socket, setSocket] = useState<any>(null); // socket 상태 관리
   const handlePress = () => {
     const newPressedState = !isPressed // 새로운 pressed 상태 
@@ -102,7 +100,6 @@ export default function HomeScreen() {
     // 소켓이 연결되었을 때
     newSocket.on('connect', () => {
       const text = '서버에 연결되었습니다.'
-      console.log(text);
       setMessage(text);
     });
 
@@ -126,15 +123,12 @@ export default function HomeScreen() {
 
     // 소켓 연결 오류 핸들링
     newSocket.on('connect_error', (error: any) => {
-      console.log('소켓 연결 오류:', error);
       const text = '소켓 연결 오류 발생. 카메라 연결을 종료해주세요';
       setMessage(text);
-
     });
 
     // 소켓 재연결 시도
     newSocket.on('reconnect_attempt', () => {
-      console.log('소켓 재연결 시도 중...');
       const text = '소켓 재연결 시도 중...';
       setMessage(text);
     });
@@ -148,7 +142,6 @@ export default function HomeScreen() {
   const disconnectFromServer = () => {
     if (socket) {
       socket.disconnect(); // 서버와의 연결 해제
-      console.log('서버와의 연결이 끊어졌습니다.');
       setMessage('서버와의 연결이 끊어졌습니다.');
       setSocket(null);
       setRecognitionResult('');
@@ -176,45 +169,80 @@ export default function HomeScreen() {
     initializeDatabase();
     setLoading(false); 
   }, []);
-/*
-  const handleWebViewLoadEnd = () => {
-    webViewRef.current?.injectJavaScript(`
-      const videoElement = document.querySelector('video');
-      if (videoElement) {
-        videoElement.style.width = '100%';
-        videoElement.style.height = 'auto';
-        videoElement.style.objectFit = 'cover'; // 비디오 크기를 화면에 맞게 조정
-      }
-      true;
-    `);
-  }
-*/
+
   // message 값이 변경될 때 TTS 실행
+  // 식별 결과 메세지
+  const [ttsQueue, setTtsQueue] = useState<string[]>([]);
+  const isSpeaking = useRef(false);
   useEffect(() => {
-    if (message && lastMessageRef.current!= message) {
+    if (ttsQueue.length > 0 && !isSpeaking.current) {
+      isSpeaking.current = true;
+      const currentMessage = ttsQueue[0];
+      Speech.speak(currentMessage, {
+        language: 'ko-KR',
+        pitch: 1.0,
+        rate: 1.0,
+        onDone: () => {
+          isSpeaking.current = false;
+          setTtsQueue(prevQueue => prevQueue.slice(1)); // 첫 번째 메시지 제거
+        },
+        onStopped: () => {
+          isSpeaking.current = false;
+          setTtsQueue(prevQueue => prevQueue.slice(1)); // 첫 번째 메시지 제거
+        },
+      });
+    }
+  }, [ttsQueue]);
+  const addToTTSQueue = (message: string) => {
+    setTtsQueue(prevQueue => [...prevQueue, message]);
+  };
+  
+  const [displayResults, setDisplayResults] = useState<{ text: string; timestamp: number }[]>([]);
+  useEffect(() => {
+    if (recognitionResult) {
+      const [idString, name] = recognitionResult.split(' '); // ID와 이름 분리
+      const newResult = {
+        text: `${name}님이 인식되었습니다`,
+        timestamp: Date.now(), // 현재 시간 저장
+      };
+      // 결과 추가
+      if (voiceOn){
+        addToTTSQueue(newResult.text);
+      }
+      setDisplayResults((prevResults) => [...prevResults, newResult]);
+    }
+  }, [recognitionResult]);
+
+  // 1초마다 displayResults에서 오래된 항목 제거
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const currentTime = Date.now();
+      setDisplayResults((prevResults) =>
+        prevResults.filter((result) => currentTime - result.timestamp < 2 * 60 * 1000) // 2분 이내의 결과만 유지
+      );
+    }, 1000); // 매 초 실행
+  
+    // 언마운트 시 타이머 정리
+    return () => clearInterval(intervalId);
+  }, []);
+
+  //서버 연결 메세지 
+  useEffect(() => {
+    if (message && lastMessageRef.current!= message&&voiceOn) {
       Speech.speak(message, {
         language: 'ko-KR',
         pitch: 1.0,
         rate: 1.0,
       });
     }
-    if (recognitionResult && lastReconitionResult.current!=recognitionResult ) {
-      Speech.speak(recognitionResult, {
-        language: 'ko-KR',
-        pitch: 1.0,
-        rate: 1.0,
-      });
-    }
-    lastReconitionResult.current = recognitionResult;
     lastMessageRef.current = message;
-  }, [message, recognitionResult]); 
+  }, [message]); 
 
   // 프로필 가져오기
   useEffect(() => {
     const fetchData = async (id: number) => {
       const profile = await fetchProfileById(id); // 특정 ID로 검색
       if (profile) {
-        console.log('Fetched Profile:', profile);
         setOneProfile(profile); // 검색된 프로필을 상태로 저장
       } else {
         console.warn(`Profile with ID ${id} not found`);
@@ -256,9 +284,11 @@ export default function HomeScreen() {
             </View>
             <View style={styles.chat_bubble}>
               { message ? (
-                <View style={styles.message_container}>
+                <View>
                   <Text style={styles.chat}>{message}</Text>
-                  {recognitionResult && <Text style={styles.chat}>{recognitionResult}</Text>}
+                  {displayResults.map((result, index) => (
+                    <Text key={index}>{result.text}</Text>
+                  ))}
                 </View>
               ):(
                 <Text style={styles.chat}>안녕하세요, 카메라를 연결 중입니다.</Text>
@@ -266,9 +296,9 @@ export default function HomeScreen() {
             </View>
             <View style={styles.list_icon_container_wrapper}>
               <View style={styles.list_icon_container}>
-                <Pressable onPress={listIconHandler}>
+                <Link href="/recentrecord">
                   <FontAwesome6 name="list-ul" size={35} color="#4169e1" />
-                </Pressable>
+                </Link>
               </View>
             </View>
             </>
@@ -287,26 +317,20 @@ export default function HomeScreen() {
     </View>
     <View style={styles.bottom}>
       <View style ={styles.mode_btn}>
-        <DropDownPicker
-          open={open}
-          value={value}
-          items={items}
-          setOpen={setOpen}
-          setValue={setValue}
-          style={styles.dropdown}
-          textStyle={styles.text}
-          dropDownContainerStyle={{
-            alignSelf: 'flex-end',
-            width: '95%',
-            backgroundColor: "white",
-            borderColor: '#D0E3FF',
-          }}
-          selectedItemContainerStyle={{
-            backgroundColor: "#D0E3FF"
-          }}
+        {voiceOn? (
+          <FontAwesome5 name="volume-up" size={24} color="#4169e1" />
+        ):(
+          <FontAwesome5 name="volume-mute" size={24} color="#c4c4c4" />
+        )}
+        <Switch
+          backgroundActive={'#4169e1'}
+          backgroundInactive={'#c4c4c4'}
+          circleSize={30}
+          onValueChange={(val) => setVoiceOn(val)}
+          value={voiceOn}
         />
       </View>
-      <View style = {styles.video_btn}>
+      <View>
         <Pressable
           onPress={handlePress}
           style={({ pressed }) => [
@@ -337,9 +361,6 @@ const styles = StyleSheet.create({
   box:{
     flex:1
   },
-  video_btn:{
-
-  },
   list_icon_container_wrapper:{
     position: 'absolute',
     bottom: 10,
@@ -367,21 +388,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  dropdown: {
-    width: '30%',
-    alignSelf: 'flex-end',
-    borderColor: '#D0E3FF',
-    height: 50,
-  },
   text: {
     fontSize: 16,
     color : '#4169E1',
     fontWeight: 'bold',
   },
   mode_btn:{
+    flexDirection: 'row',
+    gap: 16,
     width: '100%',
-    paddingTop : 5,
-    paddingRight: 5,
+    paddingTop: 6,
+    paddingLeft: 20,
+    justifyContent: 'flex-start',
   },
   Container: {
     flex: 4,
@@ -394,9 +412,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    backgroundColor: '#f1f1f1'
   },
   webview: {
     marginTop: Constants.statusBarHeight,
+    backgroundColor: '#f2f2f2',
     flex: 1,
     width: '100%',
     height: '100%',
@@ -428,9 +448,6 @@ const styles = StyleSheet.create({
     },
     elevation: 10,
   },
-  message_container:{
-    
-  },
   chat_bubble: {
     marginTop: Constants.statusBarHeight,
     position: 'absolute',
@@ -455,3 +472,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 });
+
+/*
+<DropDownPicker
+  open={open}
+  value={value}
+  items={items}
+  setOpen={setOpen}
+  setValue={setValue}
+  style={styles.dropdown}
+  textStyle={styles.text}
+  dropDownContainerStyle={{
+    alignSelf: 'flex-end',
+    width: '95%',
+    backgroundColor: "white",
+    borderColor: '#D0E3FF',
+  }}
+  selectedItemContainerStyle={{
+    backgroundColor: "#D0E3FF"
+  }}
+/>
+*/

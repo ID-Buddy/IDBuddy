@@ -28,7 +28,7 @@ export default function profileScreen(){
       router.back();
     };
     const handleEditProfile = () => {
-      router.navigate('/editprofile');
+      router.replace('/editprofile');
     };
     return(
       <>
@@ -67,7 +67,7 @@ export default function profileScreen(){
        <View style={styles.info_container}>
         <View style={styles.row_center}>
           <Text style={[styles.content, styles.name]}>{name}</Text>
-          <Text style={styles.content}>({age})</Text>
+          <Text style={styles.content}>({age},{gender})</Text>
         </View>
         <Text style={[styles.content, styles.ref]}>{relationship}</Text>
         <View style={styles.memo_container}>

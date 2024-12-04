@@ -25,7 +25,7 @@ export interface DbContextType {
     deleteAllProfiles: () => Promise<void>; // 모든 프로필 삭제 함수
     deleteProfile: (id: number) => Promise<void>; // 모든 프로필 삭제 함수
     fetchProfileById: (id:number) => Promise<Profile|null>; // ID로 특정 프로필 정보 가져오기
-
+    updateProfile: (profile:Profile) => Promise<void>//프로필 업데이트 함수
     //recordDb: SQLite.SQLiteDatabase | null; 
     //records: Record[]; //기록 데이터 배열
     //addRecord: (id:number, record: Record) => Promise<void>; // 기록 추가 함수

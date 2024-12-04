@@ -4,10 +4,8 @@ import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
 import axios from 'axios';
-
 //file-system
 import * as FileSystem from 'expo-file-system';
-
 //type
 import { Profile } from '@/types/index';
 import { DbContextType } from '@/types/index';

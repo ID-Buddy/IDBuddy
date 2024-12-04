@@ -54,7 +54,22 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     setRecords(result); // 기록 상태 업데이트 
   }
 
-
+  //프로필 업데이트 
+  const updateProfile = async (profile: Profile) => {
+    if(db) {
+      await db.runAsync(
+        `UPDATE profiles SET image = ?, name = ?, relationship = ?, memo = ?, gender = ?, age = ? WHERE id = ?`,
+        profile.image || '',
+        profile.name  || '', 
+        profile.relationship || '',
+        profile.memo || '',
+        profile.gender || '',
+        profile.age || '',
+        profile.id
+      );
+      fetchProfiles(db); // 프로필 추가 후 상태 업데이트
+    }
+  };
   // 프로필 추가
   const addProfile = async (newProfile: Profile) => {
     if (db) {
@@ -126,7 +141,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   
 
   return (
-    <DbContext.Provider value={{ db, profiles, profileInfo, addProfile, deleteProfile, deleteAllProfiles, fetchProfileById }}>
+    <DbContext.Provider value={{ db, profiles, profileInfo, updateProfile, addProfile, deleteProfile, deleteAllProfiles, fetchProfileById }}>
       {children}
     </DbContext.Provider>
   );
