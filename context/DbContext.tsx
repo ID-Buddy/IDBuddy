@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as SQLite from 'expo-sqlite';
 
 import { Profile } from '@/types/index';
+import { Record } from '@/types/index';
 import { DbContextType } from '@/types/index';
 
 
@@ -16,14 +17,25 @@ export const useDb = () => {
 
 // 데이터베이스 공급자
 export const DbProvider = ({ children }: { children: React.ReactNode }) => {
-  const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null); // 데이터베이스 객체
+  //profile 관련
+  const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null); // 프로필데이터베이스 객체
   const [profiles, setProfiles] = useState<Profile[]>([]); // 프로필 데이터
   const [profileInfo, setProfileInfo] = useState<Profile |null >(null);//특정 프로필 데이터
+
+  //recent record 관련
+  const [recordDb, setRecordDb] = useState<SQLite.SQLiteDatabase | null>(null); // 기록저장데이터베이스 객체
+  const [records, setRecords] = useState([]); //기록 데이터
+  
   useEffect(() => {
     const initializeDatabase = async () => {
       const database = await SQLite.openDatabaseAsync('profiles.db');
-      setDb(database); // 데이터베이스 객체 저장
+      //const recordDatabase = await SQLite.openDatabaseAsync('history.db')
+
+      setDb(database); // 프로필 데이터베이스 객체 저장
       fetchProfiles(database); // 프로필 데이터 불러오기
+
+      //setRecordDb(recordDatabase) // 기록 데이터베이스 객체 저장
+      //fetchRecords(recordDatabase);
     };
 
     initializeDatabase();
@@ -34,6 +46,14 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     const result = await database.getAllAsync('SELECT * FROM profiles');
     setProfiles(result); // 프로필 상태 업데이트
   };
+
+  
+  // 기록 데이터 불러오기
+  const fetchRecords = async (database: any) => {
+    const result = await database.getAllAsync('SELECT * FROM records')
+    setRecords(result); // 기록 상태 업데이트 
+  }
+
 
   // 프로필 추가
   const addProfile = async (newProfile: Profile) => {
@@ -52,6 +72,21 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // 기록 추가
+  const addRecord = async (newRecord: Record) => {
+    if(recordDb){
+      await recordDb.runAsync(
+        'INSERT INTO records (id, date, latitude, longitude,detail)  VALUES (?,?, ?, ?, ?)',
+        newRecord.id,
+        newRecord.date,
+        newRecord.latitude || '',
+        newRecord.longitude || '',
+        newRecord.detail || '',
+      );
+      fetchRecords(recordDb); // 기록 추가 후 상태 업데이트 
+    }
+  }
+
   // 모든 프로필 데이터 삭제
   const deleteAllProfiles = async () => {
     if (db) {
@@ -67,6 +102,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
       fetchProfiles(db); // 삭제 후 상태 업데이트
     }
   };
+
 
   //id로 검색
   const fetchProfileById = async (id: number) => {

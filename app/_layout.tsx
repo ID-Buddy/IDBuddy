@@ -54,6 +54,12 @@ export default function RootLayout() {
                 name="editprofile"
                 options={{}}
               />
+              <Stack.Screen
+                name="recentrecord"
+                options={{
+                  presentation: 'modal',
+                }}
+              />
             <Stack.Screen name="+not-found" />
           </Stack>
         </SearchContextProvider>

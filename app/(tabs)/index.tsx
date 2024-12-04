@@ -18,7 +18,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DropDownPicker from 'react-native-dropdown-picker';
 //db
 import { Profile } from '@/types/index';
-const db = SQLite.openDatabaseAsync('profiles.db');
+import { Record } from '@/types/index';
+//const recordDb = SQLite.openDatabaseSync('records.db')
 import { useDb } from '@/context/DbContext';
 import { DbContextType } from '@/types/index';
 
@@ -27,7 +28,7 @@ export default function HomeScreen() {
   const [oneProfile, setOneProfile] = useState<Profile|null>(null);
   const {fetchProfileById} = useDb() as DbContextType;
   const [videoUrl, setVideoUri] = useState<string>(process.env.EXPO_PUBLIC_API_VIDEO as string);
-  const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string;
+  const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string; 
   const [isLoading, setLoading] = useState<boolean>(true);
   const [isPressed, setPressed] = useState<boolean>(false); // pressed 상태 관리
 
@@ -76,6 +77,7 @@ export default function HomeScreen() {
 
   const [recognitionResult, setRecognitionResult] = useState<string>('');
   const lastReconitionResult = useRef<string>('');
+  const [idList, setIdList] = useState<string>('');
 
   const [socket, setSocket] = useState<any>(null); // socket 상태 관리
   const handlePress = () => {
@@ -157,7 +159,6 @@ export default function HomeScreen() {
   useEffect(() => {
     const initializeDatabase = async () => {
       const db = await SQLite.openDatabaseAsync('profiles.db');
-
       await db.execAsync(`
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS profiles (
@@ -170,7 +171,7 @@ export default function HomeScreen() {
           memo TEXT NOT NULL
         );
       `);
-
+      
     };
     initializeDatabase();
     setLoading(false); 
@@ -221,8 +222,8 @@ export default function HomeScreen() {
     };
     if (recognitionResult && lastReconitionResult.current !== recognitionResult) {
       const [idString, name] = recognitionResult.split(' '); // ID와 이름 분리
-      //const id = parseInt(idString, 10); // 문자열 ID를 숫자로 변환
-      const id = 1732793076660 
+      const id = parseInt(idString, 10); // 문자열 ID를 숫자로 변환
+      //const id = 1732793076660 
       if (!isNaN(id)) {
         fetchData(id); // 데이터 검색 함수 호출
       } else {
@@ -236,7 +237,7 @@ export default function HomeScreen() {
     console.log('list');
   };
   return (
-    <>
+    <View style={styles.box}>
     <View style={styles.Container}>
       {isPressed ? (
         !isLoading ? (
@@ -244,7 +245,6 @@ export default function HomeScreen() {
             <WebView
               style={styles.webview}
               source={{ uri: videoUrl }}
-              startInLoadingState={true} // 로딩 상태가 시작되면 로딩 화면 표시
             />
             {/* 오버레이 콘텐츠 */}
             <View style={styles.logo}>
@@ -329,12 +329,14 @@ export default function HomeScreen() {
         </Pressable>
       </View>
     </View>
-  
-  </>
+  </View>
 );
 }
 
 const styles = StyleSheet.create({
+  box:{
+    flex:1
+  },
   video_btn:{
 
   },
@@ -365,7 +367,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   dropdown: {
     width: '30%',
     alignSelf: 'flex-end',
@@ -384,6 +385,7 @@ const styles = StyleSheet.create({
   },
   Container: {
     flex: 4,
+    backgroundColor: '#f2f2f2',
     flexDirection: 'column',
   },
   topContent: {

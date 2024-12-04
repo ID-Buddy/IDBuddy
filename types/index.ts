@@ -9,7 +9,13 @@ export interface Profile {
     memo: string; // 메모 (필수)
     age: string;
   }
-
+export interface Record {
+  date: number; //날짜 + 시간
+  latitude: number; //위도
+  longitude: number; //경도
+  id: number; //식별된 사람 id
+  detail : string | null // 사용자가 기입한 내용(만남일기)
+}
   // 데이터베이스 컨텍스트 생성
 export interface DbContextType {
     db: SQLite.SQLiteDatabase | null; // 데이터베이스 객체
@@ -20,7 +26,12 @@ export interface DbContextType {
     deleteProfile: (id: number) => Promise<void>; // 모든 프로필 삭제 함수
     fetchProfileById: (id:number) => Promise<Profile|null>; // ID로 특정 프로필 정보 가져오기
 
+    //recordDb: SQLite.SQLiteDatabase | null; 
+    //records: Record[]; //기록 데이터 배열
+    //addRecord: (id:number, record: Record) => Promise<void>; // 기록 추가 함수
+    //deleteRecord: (id:number, date: number) => Promise<void>; // 기록 삭제 함수
   }
+
 
 
 // 검색어 타입 설정
