@@ -29,6 +29,7 @@ export interface DbContextType {
     records: Record[]; // 기록데이터 배열
     addRecord: (record: Record) => Promise<void>; // 기록 추가 함수
     deleteRecordsBeforeMidnight: ()=>Promise<void> //자정 이전 기록 삭제 함수
+    deleteRecord:(id:number, timestamp: number) => Promise<void> // 특정 기록 삭제 함수
   
   }
 

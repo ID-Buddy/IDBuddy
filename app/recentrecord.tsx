@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { ActivityIndicator, View,Text, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, View,Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import {Stack, useRouter} from 'expo-router';
 //Component
 import Empty from '@/components/RecordEmpty';
@@ -23,7 +23,6 @@ export default function recentRecordScreen() {
   // 프로필 데이터가 업데이트되면 상태를 업데이트
   useEffect(() => {
     if (records.length >= 0) {
-      console.log(records);
       setLoading(false); // 프로필이 있을 때 로딩 상태 false로 변경
     }
   }, [records]); // profiles가 변경될 때마다 실행
@@ -60,9 +59,13 @@ export default function recentRecordScreen() {
     <View style={styles.box}>
       <View style={styles.info}>
         <Entypo name="info-with-circle" size={24} color="#4169e1" />
-        <Text style={styles.info_text}>오늘의 만남 일기를 작성하면 프로필에서 확인할 수 있습니다.{'\n'}단, 저장하지 않은 기록은 하루 동안만 보관되며, 자정이 지나면 자동으로 삭제됩니다!</Text>
+        <Text style={styles.info_text}>
+          오늘의 만남 일기를 작성하면 <Text style={styles.txt_blue_bold}>프로필</Text>에서 확인할 수 있습니다.
+          {'\n'}단, 저장하지 않은 기록은 하루 동안만 보관되며, <Text style={styles.txt_blue_bold}>자정</Text>
+          이 지나면 자동으로 삭제됩니다.
+        </Text>
       </View>
-      <View style={styles.record_container}>
+      <ScrollView style={styles.record_container}>
         {records.length === 0 ? <Empty /> : 
           (
             <View style={styles.box}>
@@ -77,7 +80,7 @@ export default function recentRecordScreen() {
             ))}
             </View>
           )} 
-      </View>
+      </ScrollView>
     </View>
     </>
   );
@@ -86,6 +89,10 @@ export default function recentRecordScreen() {
 const styles = StyleSheet.create({
   box:{
     flex:1,
+  },
+  txt_blue_bold:{
+    fontWeight: 'bold',
+    color : '#4169e1'
   },
   record_container:{
     flex:1, 

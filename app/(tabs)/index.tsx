@@ -27,7 +27,7 @@ import { DbContextType } from '@/types/index';
 export default function HomeScreen() {
   const [voiceOn, setVoiceOn] = useState<boolean>(true);
   const [oneProfile, setOneProfile] = useState<Profile|null>(null);
-  const {fetchProfileById, deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
+  const {recordDb, db ,fetchProfileById, deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
   const [videoUrl, setVideoUri] = useState<string>(process.env.EXPO_PUBLIC_API_VIDEO as string);
   const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string; 
   const [isLoading, setLoading] = useState<boolean>(true);
@@ -78,7 +78,6 @@ export default function HomeScreen() {
   const [message, setMessage] = useState<string>('');
   const lastMessageRef = useRef<string>('');
   const [recognitionResult, setRecognitionResult] = useState<string>('');
-  const lastReconitionResult = useRef<string>('');
   const [socket, setSocket] = useState<any>(null); // socket 상태 관리
   const handlePress = () => {
     const newPressedState = !isPressed // 새로운 pressed 상태 
@@ -172,7 +171,7 @@ export default function HomeScreen() {
         CREATE TABLE IF NOT EXISTS records (
           id INTEGER NOT NULL,
           timestamp INTEGER NOT NULL,
-          detail TEXT,
+          detail TEXT
         );
       `);
     };
@@ -186,6 +185,7 @@ export default function HomeScreen() {
   const [ttsQueue, setTtsQueue] = useState<string[]>([]);
   const isSpeaking = useRef(false);
   useEffect(() => {
+
     if (ttsQueue.length > 0 && !isSpeaking.current) {
       isSpeaking.current = true;
       const currentMessage = ttsQueue[0];
@@ -275,6 +275,7 @@ export default function HomeScreen() {
 
 ///////////////////////////////////////
 /*테스트 용 함수 */
+/*
 useEffect(()=> {
   if(isPressed){
     const timer1 = setTimeout(() => {
@@ -294,7 +295,7 @@ useEffect(()=> {
   }
 },[isPressed])
 ////////////////////////////////////
-
+*/
 
   return (
     <View style={styles.box}>

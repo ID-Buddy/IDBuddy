@@ -29,13 +29,13 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initializeDatabase = async () => {
       const database = await SQLite.openDatabaseAsync('profiles.db');
-      //const recordDatabase = await SQLite.openDatabaseAsync('history.db')
+      const recordDatabase = await SQLite.openDatabaseAsync('records.db')
 
       setDb(database); // 프로필 데이터베이스 객체 저장
       fetchProfiles(database); // 프로필 데이터 불러오기
 
-      //setRecordDb(recordDatabase) // 기록 데이터베이스 객체 저장
-      //fetchRecords(recordDatabase);
+      setRecordDb(recordDatabase) // 기록 데이터베이스 객체 저장
+      fetchRecords(recordDatabase);
     };
 
     initializeDatabase();
@@ -91,7 +91,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   const addRecord = async (newRecord: Record) => {
     if(recordDb){
       await recordDb.runAsync(
-        'INSERT INTO records (id,timestamp,detail)  VALUES (?,?,?)',
+        'INSERT INTO records (id,timestamp,detail) VALUES (?,?,?)',
         newRecord.id,
         newRecord.timestamp,
         newRecord.detail || '',
@@ -107,7 +107,6 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
       fetchProfiles(db); // 삭제 후 상태 업데이트
     }
   };
-
   //프로필 삭제
   const deleteProfile = async (id: number) => {
     if (db) {
@@ -116,7 +115,13 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-
+  //기록 삭제
+  const deleteRecord = async (id: number, timestamp: number) => {
+    if (recordDb) {
+      await recordDb.runAsync(`DELETE FROM profiles WHERE id = ? AND timestamp = ?`, [id, timestamp]);
+      fetchRecords(recordDb); // 삭제 후 상태 업데이트
+    }
+  };
   //id로 검색
   const fetchProfileById = async (id: number) => {
     if (db) {
@@ -165,6 +170,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
         fetchProfileById,
         addRecord,
         deleteRecordsBeforeMidnight,
+        deleteRecord,
       }}>
       {children}
     </DbContext.Provider>
