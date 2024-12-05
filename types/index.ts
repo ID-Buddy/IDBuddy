@@ -10,10 +10,8 @@ export interface Profile {
     age: string;
   }
 export interface Record {
-  date: number; //날짜 + 시간
-  latitude: number; //위도
-  longitude: number; //경도
   id: number; //식별된 사람 id
+  timestamp : number; //기록된 시간(Date.now()의 값)
   detail : string | null // 사용자가 기입한 내용(만남일기)
 }
   // 데이터베이스 컨텍스트 생성
@@ -26,10 +24,12 @@ export interface DbContextType {
     deleteProfile: (id: number) => Promise<void>; // 모든 프로필 삭제 함수
     fetchProfileById: (id:number) => Promise<Profile|null>; // ID로 특정 프로필 정보 가져오기
     updateProfile: (profile:Profile) => Promise<void>//프로필 업데이트 함수
-    //recordDb: SQLite.SQLiteDatabase | null; 
-    //records: Record[]; //기록 데이터 배열
-    //addRecord: (id:number, record: Record) => Promise<void>; // 기록 추가 함수
-    //deleteRecord: (id:number, date: number) => Promise<void>; // 기록 삭제 함수
+    
+    recordDb: SQLite.SQLiteDatabase | null; 
+    records: Record[]; // 기록데이터 배열
+    addRecord: (record: Record) => Promise<void>; // 기록 추가 함수
+    deleteRecordsBeforeMidnight: ()=>Promise<void> //자정 이전 기록 삭제 함수
+  
   }
 
 

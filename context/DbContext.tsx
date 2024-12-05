@@ -24,7 +24,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
 
   //recent record 관련
   const [recordDb, setRecordDb] = useState<SQLite.SQLiteDatabase | null>(null); // 기록저장데이터베이스 객체
-  const [records, setRecords] = useState([]); //기록 데이터
+  const [records, setRecords] = useState<Record[]>([]); //기록 데이터
   
   useEffect(() => {
     const initializeDatabase = async () => {
@@ -91,11 +91,9 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   const addRecord = async (newRecord: Record) => {
     if(recordDb){
       await recordDb.runAsync(
-        'INSERT INTO records (id, date, latitude, longitude,detail)  VALUES (?,?, ?, ?, ?)',
+        'INSERT INTO records (id,timestamp,detail)  VALUES (?,?,?)',
         newRecord.id,
-        newRecord.date,
-        newRecord.latitude || '',
-        newRecord.longitude || '',
+        newRecord.timestamp,
         newRecord.detail || '',
       );
       fetchRecords(recordDb); // 기록 추가 후 상태 업데이트 
@@ -139,9 +137,35 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     return null; // 에러 발생 시 null 반환
   };
   
+  // 특정 날짜 이전의 기록 삭제 함수
+  const deleteRecordsBeforeMidnight = async () => {
+    if (recordDb) {
+      const now = new Date();
+      const midnight = new Date(now.setHours(0, 0, 0, 0)); // 오늘 자정의 타임스탬프
 
+      await recordDb.runAsync(
+        'DELETE FROM records WHERE timestamp < ?',
+        midnight.getTime() // 자정의 타임스탬프 값
+      );
+      fetchRecords(recordDb); // 삭제 후 상태 업데이트
+    }
+  };
   return (
-    <DbContext.Provider value={{ db, profiles, profileInfo, updateProfile, addProfile, deleteProfile, deleteAllProfiles, fetchProfileById }}>
+    <DbContext.Provider 
+      value={{ 
+        db, 
+        profiles, 
+        profileInfo, 
+        recordDb,
+        records,
+        updateProfile, 
+        addProfile, 
+        deleteProfile, 
+        deleteAllProfiles, 
+        fetchProfileById,
+        addRecord,
+        deleteRecordsBeforeMidnight,
+      }}>
       {children}
     </DbContext.Provider>
   );

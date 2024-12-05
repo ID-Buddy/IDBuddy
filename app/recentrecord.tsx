@@ -1,21 +1,41 @@
-import React from 'react';
-import { Button, View, ScrollView, Text, Pressable, StyleSheet } from 'react-native';
-import {Stack, useRouter,Link} from 'expo-router';
-import * as Speech from 'expo-speech';
-import { WebView } from 'react-native-webview';
+import React, {useState, useEffect} from 'react';
+import { ActivityIndicator, View,Text, Pressable, StyleSheet } from 'react-native';
+import {Stack, useRouter} from 'expo-router';
+//Component
+import Empty from '@/components/RecordEmpty';
+import RecordItem from '@/components/RecordItem';
 //Icon
 import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
 //Context 
 import { useDb } from '@/context/DbContext';
+import { Record } from '@/types/index';
 import { DbContextType } from '@/types/index';
 
 export default function recentRecordScreen() {
+  const {records} = useDb() as DbContextType;
   const router = useRouter();
   const goback = () => {
     router.back();
   };
- 
+  const [isLoading, setLoading] = useState(true); // 초기 로딩 상태
+
+  // 프로필 데이터가 업데이트되면 상태를 업데이트
+  useEffect(() => {
+    if (records.length >= 0) {
+      console.log(records);
+      setLoading(false); // 프로필이 있을 때 로딩 상태 false로 변경
+    }
+  }, [records]); // profiles가 변경될 때마다 실행
+
+
+  if (isLoading) {
+    return (
+      <View style={styles.box}>
+        <ActivityIndicator size="large" color="#4169e1" />
+      </View>
+    );
+  }
   return (
     <>
     <Stack.Screen
@@ -42,6 +62,22 @@ export default function recentRecordScreen() {
         <Entypo name="info-with-circle" size={24} color="#4169e1" />
         <Text style={styles.info_text}>오늘의 만남 일기를 작성하면 프로필에서 확인할 수 있습니다.{'\n'}단, 저장하지 않은 기록은 하루 동안만 보관되며, 자정이 지나면 자동으로 삭제됩니다!</Text>
       </View>
+      <View style={styles.record_container}>
+        {records.length === 0 ? <Empty /> : 
+          (
+            <View style={styles.box}>
+            {records.map((record) => (
+              <View key={record.id + record.timestamp}>
+                <RecordItem
+                  id={record.id}
+                  timestamp={record.timestamp}
+                  detail={record.detail}
+                />
+              </View>
+            ))}
+            </View>
+          )} 
+      </View>
     </View>
     </>
   );
@@ -50,6 +86,10 @@ export default function recentRecordScreen() {
 const styles = StyleSheet.create({
   box:{
     flex:1,
+  },
+  record_container:{
+    flex:1, 
+    backgroundColor: '#f2f2f2',
   },
   info:{
     flexDirection: 'row',

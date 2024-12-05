@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-export default function EmptyScreen() {
+export default function RecordEmptyScreen() {
   return(
     <View style={styles.container}>
-      <Text style={styles.text}>등록된 프로필이 없습니다!</Text>
+      <Text style={styles.text}>아직 기록이 없습니다.</Text>
     </View>
   )
 }

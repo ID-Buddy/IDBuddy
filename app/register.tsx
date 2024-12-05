@@ -75,8 +75,8 @@ export default function RegisterScreen() {
       alert('올바른 나이를 입력해주세요'); // 필수 항목이 비어있을 경우 경고 메시지
       return; // 추가를 진행하지 않음
     }
-    if(newProfile.gender != "여자" && newProfile.gender != "남자" && newProfile.gender != "여" && newProfile.gender !="남"){
-      alert('성별을 정확하게 기입해주세요.("여자/남자" 또는 여/남');
+    if(newProfile.gender != "여자" && newProfile.gender != "남자"){
+      alert('성별을 정확하게 기입해주세요.(여자 또는 남자)');
       return;
     }
     setAdded(true)

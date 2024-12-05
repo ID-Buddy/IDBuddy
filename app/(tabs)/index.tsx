@@ -27,15 +27,16 @@ import { DbContextType } from '@/types/index';
 export default function HomeScreen() {
   const [voiceOn, setVoiceOn] = useState<boolean>(true);
   const [oneProfile, setOneProfile] = useState<Profile|null>(null);
-  const {fetchProfileById} = useDb() as DbContextType;
+  const {fetchProfileById, deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
   const [videoUrl, setVideoUri] = useState<string>(process.env.EXPO_PUBLIC_API_VIDEO as string);
   const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string; 
   const [isLoading, setLoading] = useState<boolean>(true);
   const [isPressed, setPressed] = useState<boolean>(false); // pressed 상태 관리
 
+  /*
   //드롭다운 관련된 변수 
   const [open, setOpen] = useState<boolean>(false); // 드롭다운 열림 상태
-  const [value, setValue] = useState<string>('single');  // 현재 선택된 값
+  //const [value, setValue] = useState<string>('single');  // 현재 선택된 값
   const [items, setItems] = useState([
     { label: '싱글 모드', value: 'single'},
     { label: '멀티 모드', value: 'multi'},
@@ -49,8 +50,9 @@ export default function HomeScreen() {
       setVideoUri(process.env.EXPO_PUBLIC_API_VIDEO as string);
     }
   }, [value])
-
+*/
   // 드롭다운의 label 값을 동적으로 변경하는 로직
+  /*
   useEffect(() => {
     if (open) {
       // 드롭다운이 열렸을 때 레이블 변경
@@ -71,7 +73,7 @@ export default function HomeScreen() {
       ]);
     }
   }, [open]);
-
+*/
   //웹 소켓과 관련된 변수
   const [message, setMessage] = useState<string>('');
   const lastMessageRef = useRef<string>('');
@@ -164,9 +166,18 @@ export default function HomeScreen() {
           memo TEXT NOT NULL
         );
       `);
-      
+      const recordDb = await SQLite.openDatabaseAsync('records.db');
+      await recordDb.execAsync(`
+        PRAGMA journal_mode = WAL;
+        CREATE TABLE IF NOT EXISTS records (
+          id INTEGER NOT NULL,
+          timestamp INTEGER NOT NULL,
+          detail TEXT,
+        );
+      `);
     };
     initializeDatabase();
+    deleteRecordsBeforeMidnight();//전날 기록 데이터 삭제
     setLoading(false); 
   }, []);
 
@@ -193,23 +204,46 @@ export default function HomeScreen() {
       });
     }
   }, [ttsQueue]);
-  const addToTTSQueue = (message: string) => {
-    setTtsQueue(prevQueue => [...prevQueue, message]);
+  //tts 큐 업데이트 
+  const addToTTSQueue = (text: string) => {
+    // 기존 큐에 포함되지 않은 경우에만 추가
+    setTtsQueue((prevQueue) => {
+      if (!prevQueue.includes(text)) {
+        return [...prevQueue, text];
+      }
+      return prevQueue; // 이미 포함된 경우 기존 큐를 그대로 반환
+    });
   };
-  
+  // DisplayResults 업데이트
+  const addToDisplayResults = (newResult: { text: string; timestamp: number }) => {
+    setDisplayResults((prevResults) => {
+      if (!prevResults.some((result) => result.text === newResult.text)) {
+        return [...prevResults, newResult];
+      }
+      return prevResults;
+    });
+  };
   const [displayResults, setDisplayResults] = useState<{ text: string; timestamp: number }[]>([]);
   useEffect(() => {
     if (recognitionResult) {
       const [idString, name] = recognitionResult.split(' '); // ID와 이름 분리
+      const newRecord = {
+        id: parseInt(idString, 10), // idString을 숫자(십진수)로 변환하여 저장
+        timestamp: Date.now(),
+        detail: null,
+      };
       const newResult = {
         text: `${name}님이 인식되었습니다`,
         timestamp: Date.now(), // 현재 시간 저장
       };
-      // 결과 추가
+      // TTS 큐 추가
       if (voiceOn){
         addToTTSQueue(newResult.text);
       }
-      setDisplayResults((prevResults) => [...prevResults, newResult]);
+      // DisplayResults 추가
+      addToDisplayResults(newResult);
+      // 레코드 추가 (dbContext의 addRecord 함수 호출)
+      addRecord(newRecord);
     }
   }, [recognitionResult]);
 
@@ -238,32 +272,30 @@ export default function HomeScreen() {
     lastMessageRef.current = message;
   }, [message]); 
 
-  // 프로필 가져오기
-  useEffect(() => {
-    const fetchData = async (id: number) => {
-      const profile = await fetchProfileById(id); // 특정 ID로 검색
-      if (profile) {
-        setOneProfile(profile); // 검색된 프로필을 상태로 저장
-      } else {
-        console.warn(`Profile with ID ${id} not found`);
-      }
-    };
-    if (recognitionResult && lastReconitionResult.current !== recognitionResult) {
-      const [idString, name] = recognitionResult.split(' '); // ID와 이름 분리
-      const id = parseInt(idString, 10); // 문자열 ID를 숫자로 변환
-      //const id = 1732793076660 
-      if (!isNaN(id)) {
-        fetchData(id); // 데이터 검색 함수 호출
-      } else {
-        console.warn('Invalid ID format in recognitionResult');
-      }
-    }
-  }, [recognitionResult]);
 
-  // 결과 리스트 보러 가기(list 버튼 눌렀을 때의 핸들러) 
-  const listIconHandler =() => {
-    console.log('list');
-  };
+///////////////////////////////////////
+/*테스트 용 함수 */
+useEffect(()=> {
+  if(isPressed){
+    const timer1 = setTimeout(() => {
+      setRecognitionResult('1732793076660 ksm');
+    }, 1000);
+  
+    const timer2 = setTimeout(() => {
+      setRecognitionResult('1732788206470 jej');
+    }, 2000);
+  
+    // 정리 함수 반환
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      console.log('테스트 입력 값 완료');
+    };
+  }
+},[isPressed])
+////////////////////////////////////
+
+
   return (
     <View style={styles.box}>
     <View style={styles.Container}>
