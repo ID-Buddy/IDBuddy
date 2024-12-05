@@ -280,7 +280,7 @@ export default function RegisterScreen() {
             <Text style={styles.e_g_title}>얼굴 등록</Text>
             <View style={styles.e_g_content}>
               <Entypo name="info-with-circle" size={24} color="#4169e1" />
-              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!(최대 3장)</Text>
+              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!(최대 5장)</Text>
             </View>
             <View style={styles.e_g_img_container}>
               <View>
@@ -303,11 +303,11 @@ export default function RegisterScreen() {
           
             {sendImages.length != 0 ? 
             <ScrollView horizontal = {true}>
-            {sendImages.map((image, index) => (
-              <View key={index} style={styles.imageWrapper}>
-                <Image source={{ uri: image }} style={styles.carouselImage} />
-              </View>
-            ))}
+              {sendImages.map((image, index) => (
+                <View key={index} style={styles.imageWrapper}>
+                  <Image source={{ uri: image }} style={styles.carouselImage} />
+                </View>
+              ))}
           </ScrollView> :(
             <Pressable onPress={pickSendImage}>
             <View style={{padding: 100}}>  
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     marginTop: 9,
   },
   imageWrapper: {
-    marginHorizontal: 10,
+    marginHorizontal: 1,
     position: 'relative',
   },
   carouselImage: {

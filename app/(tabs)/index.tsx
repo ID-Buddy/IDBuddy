@@ -1,6 +1,5 @@
 import { ActivityIndicator, Image, StyleSheet, Pressable, View, Text } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
-import { FontAwesome } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 import {Link} from 'expo-router';
 import {Switch} from 'react-native-switch';
@@ -16,11 +15,9 @@ import { WebView } from 'react-native-webview';
 import Constants from 'expo-constants';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-//dropdown
-import DropDownPicker from 'react-native-dropdown-picker';
+
 //db
 import { Profile } from '@/types/index';
-import { Record } from '@/types/index';
 import { useDb } from '@/context/DbContext';
 import { DbContextType } from '@/types/index';
 
@@ -33,47 +30,6 @@ export default function HomeScreen() {
   const [isLoading, setLoading] = useState<boolean>(true);
   const [isPressed, setPressed] = useState<boolean>(false); // pressed 상태 관리
 
-  /*
-  //드롭다운 관련된 변수 
-  const [open, setOpen] = useState<boolean>(false); // 드롭다운 열림 상태
-  //const [value, setValue] = useState<string>('single');  // 현재 선택된 값
-  const [items, setItems] = useState([
-    { label: '싱글 모드', value: 'single'},
-    { label: '멀티 모드', value: 'multi'},
-  ]);
-
-  useEffect(()=>{
-    if (value == 'single'){
-      setVideoUri(process.env.EXPO_PUBLIC_API_VIDEO as string);
-    }
-    else if (value == 'multi'){
-      setVideoUri(process.env.EXPO_PUBLIC_API_VIDEO as string);
-    }
-  }, [value])
-*/
-  // 드롭다운의 label 값을 동적으로 변경하는 로직
-  /*
-  useEffect(() => {
-    if (open) {
-      // 드롭다운이 열렸을 때 레이블 변경
-      setItems(prevItems =>
-        prevItems.map(item =>
-          item.value === 'single'
-            ? { ...item, label: '싱글 모드 ( 1대1 상황일 때 적합합니다. )' }
-            : item.value === 'multi'
-            ? { ...item, label: '멀티 모드 ( 여러 사람을 만날 때 적합합니다. )' }
-            : item
-        )
-      );
-    } else {
-      // 드롭다운이 닫혔을 때 원래 레이블로 되돌림
-      setItems([
-        { label: '싱글 모드', value: 'single' },
-        { label: '멀티 모드', value: 'multi' },
-      ]);
-    }
-  }, [open]);
-*/
   //웹 소켓과 관련된 변수
   const [message, setMessage] = useState<string>('');
   const lastMessageRef = useRef<string>('');
@@ -505,24 +461,3 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 });
-
-/*
-<DropDownPicker
-  open={open}
-  value={value}
-  items={items}
-  setOpen={setOpen}
-  setValue={setValue}
-  style={styles.dropdown}
-  textStyle={styles.text}
-  dropDownContainerStyle={{
-    alignSelf: 'flex-end',
-    width: '95%',
-    backgroundColor: "white",
-    borderColor: '#D0E3FF',
-  }}
-  selectedItemContainerStyle={{
-    backgroundColor: "#D0E3FF"
-  }}
-/>
-*/

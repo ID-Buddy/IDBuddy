@@ -28,7 +28,6 @@ const RegisterScreen = () => {
     profile.name.includes(keyword) // 대소문자 구분 없이 필터링
   );
 
-
   if (isLoading) {
     return (
       <ThemedView style={styles.Container}>
@@ -37,7 +36,6 @@ const RegisterScreen = () => {
     );
   }
 
-  
   return (
     <LinearGradient colors={['#f2f2f2', 'white']} locations={[0.2, 1]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.scrollContainer} stickyHeaderIndices={[1]} style={{ flex: 1 }}>

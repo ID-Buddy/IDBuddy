@@ -9,7 +9,6 @@ import Feather from '@expo/vector-icons/Feather';
 import Entypo from '@expo/vector-icons/Entypo';
 //Context 
 import { useDb } from '@/context/DbContext';
-import { Record } from '@/types/index';
 import { DbContextType } from '@/types/index';
 
 export default function recentRecordScreen() {

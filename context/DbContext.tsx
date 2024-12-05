@@ -118,7 +118,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   //기록 삭제
   const deleteRecord = async (id: number, timestamp: number) => {
     if (recordDb) {
-      await recordDb.runAsync(`DELETE FROM profiles WHERE id = ? AND timestamp = ?`, [id, timestamp]);
+      await recordDb.runAsync(`DELETE FROM records WHERE id = ? AND timestamp = ?`, [id, timestamp]);
       fetchRecords(recordDb); // 삭제 후 상태 업데이트
     }
   };
