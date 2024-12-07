@@ -10,10 +10,18 @@ interface RecordItemProps {
 }
 
 const RecordItem: React.FC<RecordItemProps> = ({ id, timestamp, detail}) => {
-  const {deleteRecord} = useDb() as DbContextType;
+  const {deleteRecord, updateDetail} = useDb() as DbContextType;
   const [isInputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState<string>('');
 
+  const handleSubmit = () => {
+    const record = {
+      id: id,
+      timestamp: timestamp,
+      detail: inputValue 
+    };
+    updateDetail(record);
+  };
   const toggleInput = () => {
     setInputVisible(!isInputVisible);
   };
@@ -25,6 +33,8 @@ const RecordItem: React.FC<RecordItemProps> = ({ id, timestamp, detail}) => {
   const handleDelete = () => {
     deleteRecord(id, timestamp);
   };
+
+  
   return (
     <View style={styles.recordItem}>
       <Text style={styles.recordText}>ID: {id}</Text>
@@ -45,7 +55,7 @@ const RecordItem: React.FC<RecordItemProps> = ({ id, timestamp, detail}) => {
             value={inputValue}
             onChangeText={handleInputChange}
           />
-          <TouchableOpacity onPress={() => console.log('Submitted:', inputValue)} style={styles.submitButton}>
+          <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
             <Text style={styles.submitButtonText}>Submit</Text>
           </TouchableOpacity>
         </View>

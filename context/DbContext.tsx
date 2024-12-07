@@ -47,11 +47,9 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
     setProfiles(result); // 프로필 상태 업데이트
   };
 
-  
   // 기록 데이터 불러오기
   const fetchRecords = async (database: any) => {
     const result = await database.getAllAsync('SELECT * FROM records')
-    console.log(result);
     setRecords(result); // 기록 상태 업데이트 
   }
 
@@ -69,6 +67,18 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
         profile.id
       );
       fetchProfiles(db); // 프로필 추가 후 상태 업데이트
+    }
+  };
+  //디테일 업데이트
+  const updateDetail = async (record: Record) => {
+    if(recordDb) {
+      await recordDb.runAsync(
+        `UPDATE records SET detail = ? WHERE id = ? AND timestamp = ?`,
+        record.detail,
+        record.id,
+        record.timestamp
+      );
+      fetchRecords(recordDb); // 프로필 추가 후 상태 업데이트
     }
   };
   // 프로필 추가
@@ -147,10 +157,10 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   const deleteRecordsBeforeMidnight = async () => {
     if (recordDb) {
       const now = new Date();
-      const midnight = new Date(now.setHours(0, 0, 0, 0)); // 오늘 자정의 타임스탬프
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
       await recordDb.runAsync(
-        'DELETE FROM records WHERE timestamp < ?',
+        'DELETE FROM records WHERE timestamp <?',
         midnight.getTime() // 자정의 타임스탬프 값
       );
       fetchRecords(recordDb); // 삭제 후 상태 업데이트
@@ -172,6 +182,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
         addRecord,
         deleteRecordsBeforeMidnight,
         deleteRecord,
+        updateDetail,
       }}>
       {children}
     </DbContext.Provider>

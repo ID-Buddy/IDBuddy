@@ -24,9 +24,8 @@ import { DbContextType } from '@/types/index';
 
 export default function HomeScreen() {
   const [voiceOn, setVoiceOn] = useState<boolean>(true);
-  const [oneProfile, setOneProfile] = useState<Profile|null>(null);
-  const {recordDb, db ,fetchProfileById, deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
-  const [videoUrl, setVideoUri] = useState<string>(process.env.EXPO_PUBLIC_API_VIDEO as string);
+  const {fetchProfileById,deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
+  const videoUrl = process.env.EXPO_PUBLIC_API_VIDEO as string;
   const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string; 
   const [isLoading, setLoading] = useState<boolean>(true);
   const [isPressed, setPressed] = useState<boolean>(false); // pressed 상태 관리
@@ -233,15 +232,15 @@ export default function HomeScreen() {
 
 ///////////////////////////////////////
 /*테스트 용 함수 */
-/*
+
 useEffect(()=> {
   if(isPressed){
     const timer1 = setTimeout(() => {
-      setRecognitionResult('1732793076660 kms');
+      setRecognitionResult({ id: '1733566820675', name: 'Jh' });
     }, 1000);
   
     const timer2 = setTimeout(() => {
-      setRecognitionResult('1732788206470 jej');
+      setRecognitionResult({ id: '1733566981653', name: 'Kms' });
     }, 2000);
   
     // 정리 함수 반환
@@ -253,7 +252,7 @@ useEffect(()=> {
   }
 },[isPressed])
 ////////////////////////////////////
-*/
+
 
   return (
     <View style={styles.box}>

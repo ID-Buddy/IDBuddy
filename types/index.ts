@@ -30,7 +30,7 @@ export interface DbContextType {
     addRecord: (record: Record) => Promise<void>; // 기록 추가 함수
     deleteRecordsBeforeMidnight: ()=>Promise<void> //자정 이전 기록 삭제 함수
     deleteRecord:(id:number, timestamp: number) => Promise<void> // 특정 기록 삭제 함수
-  
+    updateDetail:(record:Record) => Promise<void> // 디테일 업데이트
   }
 
 export interface RecognitionResult {

@@ -64,12 +64,12 @@ export default function recentRecordScreen() {
           이 지나면 자동으로 삭제됩니다.
         </Text>
       </View>
-      <ScrollView style={styles.record_container}>
         {records.length === 0 ? <Empty /> : 
           (
-            <View style={styles.box}>
+            <ScrollView style={styles.record_container}>
+       
             {records.map((record) => (
-              <View key={record.id + record.timestamp}>
+              <View  style={styles.box} key={record.id + record.timestamp}>
                 <RecordItem
                   id={record.id}
                   timestamp={record.timestamp}
@@ -77,9 +77,8 @@ export default function recentRecordScreen() {
                 />
               </View>
             ))}
-            </View>
+            </ScrollView>
           )} 
-      </ScrollView>
     </View>
     </>
   );
