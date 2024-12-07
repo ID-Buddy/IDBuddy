@@ -15,7 +15,8 @@ import { WebView } from 'react-native-webview';
 import Constants from 'expo-constants';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+//Type
+import {RecognitionResult} from '@/types/index';
 //db
 import { Profile } from '@/types/index';
 import { useDb } from '@/context/DbContext';
@@ -33,7 +34,7 @@ export default function HomeScreen() {
   //웹 소켓과 관련된 변수
   const [message, setMessage] = useState<string>('');
   const lastMessageRef = useRef<string>('');
-  const [recognitionResult, setRecognitionResult] = useState<string>('');
+  const [recognitionResult, setRecognitionResult] = useState<RecognitionResult|null>(null);
   const [socket, setSocket] = useState<any>(null); // socket 상태 관리
   const handlePress = () => {
     const newPressedState = !isPressed // 새로운 pressed 상태 
@@ -67,13 +68,13 @@ export default function HomeScreen() {
     });
 
     // 서버에서 'recognition_result' 이벤트 수신
-    newSocket.on('recognition_result', (data: { status: string; message: string }) => {
+    newSocket.on('recognition_result', (data: { status: string; result: { id: string; name: string } }) => {
       console.log('서버에서 얼굴 인식 결과 수신:', data);
-      if (data.status === 'success') {
-        console.log(data.message);
-        setRecognitionResult(data.message);
-      } 
-      else {
+      if (data.status === 'success' && data.result) {
+        const result = data.result;
+        console.log(`인식된 ID: ${result.id}, 이름: ${result.name}`);
+        setRecognitionResult(result);
+      } else {
         console.log('데이터 수신 실패 : ', data);
       }
     });
@@ -101,7 +102,7 @@ export default function HomeScreen() {
       socket.disconnect(); // 서버와의 연결 해제
       setMessage('서버와의 연결이 끊어졌습니다.');
       setSocket(null);
-      setRecognitionResult('');
+      setRecognitionResult(null);
     }
   };
 
@@ -182,7 +183,8 @@ export default function HomeScreen() {
   const [displayResults, setDisplayResults] = useState<{ text: string; timestamp: number }[]>([]);
   useEffect(() => {
     if (recognitionResult) {
-      const [idString, name] = recognitionResult.split(' '); // ID와 이름 분리
+      const idString= recognitionResult.id
+      const name = recognitionResult.name
       const newRecord = {
         id: parseInt(idString, 10), // idString을 숫자(십진수)로 변환하여 저장
         timestamp: Date.now(),
@@ -235,7 +237,7 @@ export default function HomeScreen() {
 useEffect(()=> {
   if(isPressed){
     const timer1 = setTimeout(() => {
-      setRecognitionResult('1732793076660 ksm');
+      setRecognitionResult('1732793076660 kms');
     }, 1000);
   
     const timer2 = setTimeout(() => {

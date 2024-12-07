@@ -33,6 +33,11 @@ export interface DbContextType {
   
   }
 
+export interface RecognitionResult {
+  id: string;
+  name: string;
+};
+
 
 
 // 검색어 타입 설정

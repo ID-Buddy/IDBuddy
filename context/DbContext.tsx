@@ -51,6 +51,7 @@ export const DbProvider = ({ children }: { children: React.ReactNode }) => {
   // 기록 데이터 불러오기
   const fetchRecords = async (database: any) => {
     const result = await database.getAllAsync('SELECT * FROM records')
+    console.log(result);
     setRecords(result); // 기록 상태 업데이트 
   }
 
