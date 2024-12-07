@@ -1,15 +1,17 @@
-import React from 'react';
-import {View, Text, StyleSheet, Image, Pressable, Button} from 'react-native';
+import React , {useEffect, useState}from 'react';
+import {View, Text, StyleSheet, Image, Pressable, Button, FlatList} from 'react-native';
 import { Profile } from '@/types/index';
 import {Stack, useLocalSearchParams, useRouter, Link} from 'expo-router';
 import { useDb } from '@/context/DbContext';
 import { DbContextType } from '@/types/index';
+import { Record } from '@/types/index';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 //Icon
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function profileScreen(){
     const router = useRouter();
-    const {deleteProfile} = useDb() as DbContextType;
+    const {deleteProfile, fetchProfileById} = useDb() as DbContextType;
     const gotoPeopleScreen= () => {
       router.back();
     }
@@ -23,6 +25,30 @@ export default function profileScreen(){
         gender?: string;
         age?: string;
       };
+    const [records, setRecords] = useState<Record[]>([]);
+
+    useEffect(() => {
+      if (id !== undefined) { // id가 존재하는지 확인
+        const fetchRecords = async () => {
+          try {
+            // AsyncStorage에서 해당 id의 데이터를 가져오기
+            const storedRecordsJSON = await AsyncStorage.getItem(id.toString());
+            if (storedRecordsJSON) {
+              // JSON을 파싱하여 리스트 형태로 변환
+              const storedRecords = JSON.parse(storedRecordsJSON);
+              setRecords(storedRecords);
+            }
+          } catch (error) {
+            console.error('Error fetching records from AsyncStorage:', error);
+          }
+        };
+  
+        fetchRecords();
+      } else {
+        console.warn('ID is not provided');
+      }
+    }, [id]);
+
     const handleDeleteProfile = async () =>{
       await deleteProfile(id as number)
       router.back();
@@ -75,6 +101,23 @@ export default function profileScreen(){
           <Text style={styles.memo}>{memo}</Text>
         </View>
        </View>
+       <View style={styles.container}>
+        {records.length > 0 ? (
+          <FlatList
+            data={records}
+            keyExtractor={(item, index) => index.toString()} // 고유 키 생성
+            renderItem={({ item }) => (
+              <View style={styles.recordItem}>
+                <Text>ID: {item.id}</Text>
+                <Text>Timestamp: {new Date(item.timestamp).toLocaleString()}</Text>
+                <Text>Detail: {item.detail ? item.detail : 'No details provided'}</Text>
+              </View>
+            )}
+          />
+        ) : (
+          <Text>No records found for this ID</Text>
+        )}
+      </View>
        <Button title="프로필 삭제" onPress={() => id !== undefined && handleDeleteProfile()} color="red" />
     </View>
     </>
@@ -86,6 +129,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems:'center'
   }, 
+  recordItem: {
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
   edit_btn:{
     fontSize: 19,
     color: "#4169e1",

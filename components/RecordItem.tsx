@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 //Context 
 import { useDb } from '@/context/DbContext';
 import { DbContextType } from '@/types/index';
@@ -14,6 +15,27 @@ const RecordItem: React.FC<RecordItemProps> = ({ id, timestamp, detail}) => {
   const [isInputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState<string>('');
 
+  // 데이터 추가 함수
+  const addRecordToStorage = async (id: number, newRecord: RecordItemProps) => {
+    try {
+      // AsyncStorage에서 기존 데이터를 가져오기
+      const existingRecordsJSON = await AsyncStorage.getItem(id.toString());
+      const existingRecords = existingRecordsJSON ? JSON.parse(existingRecordsJSON) : [];
+
+      // 새로운 데이터를 리스트에 추가
+      existingRecords.push(newRecord);
+
+      // 리스트의 길이가 10개를 초과하면 가장 오래된 데이터를 제거
+      if (existingRecords.length > 10) {
+        existingRecords.shift(); // 가장 오래된 데이터를 제거
+      }
+
+      // 업데이트된 리스트를 AsyncStorage에 저장
+      await AsyncStorage.setItem(id.toString(), JSON.stringify(existingRecords));
+    } catch (error) {
+      console.error('Error adding record to AsyncStorage:', error);
+    }
+  };
   const handleSubmit = () => {
     const record = {
       id: id,
@@ -21,6 +43,7 @@ const RecordItem: React.FC<RecordItemProps> = ({ id, timestamp, detail}) => {
       detail: inputValue 
     };
     updateDetail(record);
+    addRecordToStorage(id, record);
   };
   const toggleInput = () => {
     setInputVisible(!isInputVisible);
