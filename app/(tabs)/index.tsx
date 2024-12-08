@@ -24,7 +24,7 @@ import { DbContextType } from '@/types/index';
 
 export default function HomeScreen() {
   const [voiceOn, setVoiceOn] = useState<boolean>(true);
-  const {fetchProfileById,deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
+  const {deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
   const videoUrl = process.env.EXPO_PUBLIC_API_VIDEO as string;
   const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string; 
   const [isLoading, setLoading] = useState<boolean>(true);
@@ -232,7 +232,7 @@ export default function HomeScreen() {
 
 ///////////////////////////////////////
 /*테스트 용 함수 */
-
+/**
 useEffect(()=> {
   if(isPressed){
     const timer1 = setTimeout(() => {
@@ -251,6 +251,7 @@ useEffect(()=> {
     };
   }
 },[isPressed])
+ */
 ////////////////////////////////////
 
 

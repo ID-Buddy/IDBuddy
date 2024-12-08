@@ -16,7 +16,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Entypo from '@expo/vector-icons/Entypo';
 
 export default function editprofileScreen() {
-  const {updateProfile} = useDb() as DbContextType;
+  const {updateProfile,deleteProfile} = useDb() as DbContextType;
   const [newimage, setImage] = useState<string |null>(null);
   const [newProfile, setNewProfile] = useState<Profile>({
       id: -100,
@@ -142,7 +142,10 @@ export default function editprofileScreen() {
     updateProfile(newProfile);
     router.replace('/people');
   };
-
+  const handleDeleteProfile = async () =>{
+    await deleteProfile(id as number)
+    router.navigate('/people');
+  };
 if(!newProfile){
   return(
       <View style={{flex:1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center'}}><ActivityIndicator size="large" color="#4169e1" /></View>
@@ -214,6 +217,7 @@ if(!newProfile){
                       onChangeText={(text) => setNewProfile({ ...newProfile, memo: text })}
                   />
               </View>
+              <Button title="프로필 삭제" onPress={() => id !== undefined && handleDeleteProfile()} color="red" />
           </ScrollView>
           </KeyboardAvoidingView>
           </>

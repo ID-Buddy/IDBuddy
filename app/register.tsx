@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Image, Platform, View, Button, TextInput, StyleSheet,Pressable,KeyboardAvoidingView,ScrollView, Text,Keyboard,TouchableWithoutFeedback } from 'react-native';
+import { Image, Platform, View, Button, TextInput, StyleSheet,Pressable,KeyboardAvoidingView,ScrollView, Text,Keyboard,TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { useDb } from '@/context/DbContext';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, Stack } from 'expo-router';
@@ -15,6 +15,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 
 export default function RegisterScreen() {
   const registerUrl = process.env.EXPO_PUBLIC_API_REGISTER as string;
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
   // 이미지 저장 함수
   async function saveImageToDisk(uri: string): Promise<string | null> {
     // documentDirectory가 null일 경우 예외 처리
@@ -30,7 +31,7 @@ export default function RegisterScreen() {
     }
   
     const newUri = FileSystem.documentDirectory + fileName;
-  
+    
     try {
       await FileSystem.copyAsync({
         from: uri,
@@ -44,8 +45,7 @@ export default function RegisterScreen() {
     }
   }
   const router = useRouter();
-  const isModal = router.canGoBack();
-  const { db, addProfile, deleteAllProfiles } = useDb() as DbContextType;
+  const { addProfile} = useDb() as DbContextType;
   const [newProfile, setNewProfile] = useState<Profile>({
     id: Date.now(), // id는 새로운 프로필 생성 시 고유하게 설정할 수 있음
     image: '',
@@ -101,6 +101,7 @@ export default function RegisterScreen() {
   };
 
   const pickSendImage = async () => {
+    setSendImages([]);
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
@@ -116,7 +117,6 @@ export default function RegisterScreen() {
 
 
   const uploadImage = async () => {
-    console.log('here');
     if (!isSelected || sendImages.length === 0) {
       alert("이미지를 추가하세요!");
       return;
@@ -145,12 +145,14 @@ export default function RegisterScreen() {
       }); 
     })
     try {
+      setIsLoading(true); // 로딩 상태 활성화
       // axios를 사용한 파일 업로드 요청 (Content-Type 자동 설정)
       const res = await axios.post(registerUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      setIsLoading(false); // 로딩 상태 비활성화
       // 서버 응답 확인
       if (res.status === 200) {
         alert('등록이 성공적으로 이루어졌습니다!');
@@ -169,11 +171,12 @@ export default function RegisterScreen() {
         setSendImages([]); 
         router.back();
       } else {
-        alert(res.data || '이미지 업로드 실패');
+        alert(res.data || '얼굴을 알아볼 수 있는 사진으로 업로드해주세요!');
       }
     } catch (error) {
       console.error('업로드 오류:', error);
       alert('서버 요청 중 오류가 발생했습니다.');
+      setIsLoading(false);
     }
   };
 
@@ -214,7 +217,9 @@ export default function RegisterScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // iOS에서는 padding, Android는 height로 설정
       >
-      <ScrollView style ={styles.container}>
+      <ScrollView 
+        nestedScrollEnabled={true}
+        style ={styles.container}>
           {!isAdded ? 
           <View>
               <View style={styles.image_container}>
@@ -280,7 +285,7 @@ export default function RegisterScreen() {
             <Text style={styles.e_g_title}>얼굴 등록</Text>
             <View style={styles.e_g_content}>
               <Entypo name="info-with-circle" size={24} color="#4169e1" />
-              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!(최대 5장)</Text>
+              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!<Text style={styles.bold}>(최대 3장)</Text></Text>
             </View>
             <View style={styles.e_g_img_container}>
               <View>
@@ -300,36 +305,48 @@ export default function RegisterScreen() {
                 />
               </View>
             </View>
-          
-            {sendImages.length != 0 ? 
-            <ScrollView horizontal = {true}>
-              {sendImages.map((image, index) => (
-                <View key={index} style={styles.imageWrapper}>
-                  <Image source={{ uri: image }} style={styles.carouselImage} />
+            <View style={{flex:1, marginTop:55,}}>
+              {sendImages.length != 0 ? 
+              <Pressable onPress={pickSendImage}>
+                <ScrollView 
+                  horizontal = {true}
+                  >
+                    {sendImages.map((image, index) => (
+                      <View key={index} style={styles.imageWrapper}>
+                        <Image source={{ uri: image }} style={styles.carouselImage} />
+                      </View>
+                    ))}
+                </ScrollView> 
+              </Pressable>
+              :(
+                <Pressable onPress={pickSendImage}>
+                <View style={{padding: 50}}>  
+                  <MaterialCommunityIcons name="message-image-outline" size={100} color="#c8c8c8" />
                 </View>
-              ))}
-          </ScrollView> :(
-            <Pressable onPress={pickSendImage}>
-            <View style={{padding: 100}}>  
-              <MaterialCommunityIcons name="message-image-outline" size={100} color="#c8c8c8" />
+                </Pressable>
+              )}
             </View>
-            </Pressable>
-          )}
-          
-          <Pressable
-            onPress={() => {
-              uploadImage();
-            }}
-            style={[
-              styles.button,
-              { backgroundColor: isSelected ? '#7690DE': '#c8c8c8'}, 
-              { opacity: isSelected ? 1 : 0.5 },  // 비활성화되면 버튼이 흐릿해짐
-            ]}
-            disabled={isSelected === false}
-          >
-            <Text style={styles.btn_text}>사진 등록하기</Text>
-          </Pressable>
-            
+            {isLoading ? (
+              // 로딩 화면
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text>이미지를 업로드 중입니다...</Text>
+              </View>
+            ) : (
+              <Pressable
+                onPress={() => {
+                  uploadImage();
+                }}
+                style={[
+                  styles.button,
+                  { backgroundColor: isSelected ? '#7690DE': '#c8c8c8'}, 
+                  { opacity: isSelected ? 1 : 0.5 },  // 비활성화되면 버튼이 흐릿해짐
+                ]}
+                disabled={isSelected === false}
+              >
+                <Text style={styles.btn_text}>사진 등록하기</Text>
+              </Pressable>
+            )}
           </View>
         )}
       </ScrollView>
@@ -340,6 +357,10 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  bold:{
+    color: '#4169E1',fontWeight: 'bold'
+  },
+  loadingContainer: { marginTop: 40, gap: 20,justifyContent: 'center', alignItems: 'center' },
   btn_text: {
     fontSize: 16,
   },
@@ -381,7 +402,6 @@ const styles = StyleSheet.create({
     height: 50,
     alignItems: 'center',
     justifyContent: 'center',
-
   },
   sendImage:{
     paddingVertical: 20,
@@ -452,15 +472,15 @@ const styles = StyleSheet.create({
   },
   add_image_btn:{
     marginBottom: 3,
-    marginTop: 9,
+    marginTop: 1,
   },
   imageWrapper: {
-    marginHorizontal: 1,
+    marginHorizontal: 5,
     position: 'relative',
   },
   carouselImage: {
-    width: 120,
-    height: 120,
+    width: 180,
+    height: 180,
     borderRadius: 10,
   },
 });

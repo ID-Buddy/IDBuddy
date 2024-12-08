@@ -49,10 +49,7 @@ export default function profileScreen(){
       }
     }, [id]);
 
-    const handleDeleteProfile = async () =>{
-      await deleteProfile(id as number)
-      router.back();
-    };
+    
     const handleEditProfile = () => {
       router.replace('/editprofile');
     };
@@ -80,6 +77,7 @@ export default function profileScreen(){
             },
             headerShadowVisible: false,
         }}/> 
+      <View style={styles.box}>
       <View  style={styles.container}>
       {image ? (
         <Image 
@@ -90,6 +88,7 @@ export default function profileScreen(){
             <Text style={styles.defaultText}numberOfLines={1} ellipsizeMode='tail'>{name}</Text>
           </View>
        )}
+       
        <View style={styles.info_container}>
         <View style={styles.row_center}>
           <Text style={[styles.content, styles.name]}>{name}</Text>
@@ -101,35 +100,60 @@ export default function profileScreen(){
           <Text style={styles.memo}>{memo}</Text>
         </View>
        </View>
-       <View style={styles.container}>
+    </View>
+    <View style={styles.record_container}>
+        <Text style={styles.record_title}>최근 만남 일기</Text>
+        <Text style={styles.record_sub}>최근 작성한 10개의 일기를 볼 수 있습니다.</Text>
         {records.length > 0 ? (
           <FlatList
             data={records}
             keyExtractor={(item, index) => index.toString()} // 고유 키 생성
             renderItem={({ item }) => (
               <View style={styles.recordItem}>
-                <Text>ID: {item.id}</Text>
                 <Text>Timestamp: {new Date(item.timestamp).toLocaleString()}</Text>
-                <Text>Detail: {item.detail ? item.detail : 'No details provided'}</Text>
+                <Text>Detail:</Text>
+                <Text style={{backgroundColor:'white', borderRadius: 5,padding:5,}}>{item.detail ? item.detail : 'No details provided'}</Text>
               </View>
             )}
           />
         ) : (
-          <Text>No records found for this ID</Text>
+          <Text>아직 기록한 일기가 없습니다.</Text>
         )}
       </View>
-       <Button title="프로필 삭제" onPress={() => id !== undefined && handleDeleteProfile()} color="red" />
     </View>
     </>
     );
 }
 
 const styles = StyleSheet.create({
+  box:{
+    flex:1
+  },
+  record_sub:{
+    color:'gray', fontSize:13, fontWeight: 'semibold',
+    marginBottom: 10,
+  },
+  record_title:{
+    alignSelf: 'flex-start',
+    color : '#4169e1',
+    fontSize: 25,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  record_container:{
+    flex:1,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 13,
+    borderTopRightRadius: 13,
+    padding:20,
+    paddingTop: 35,
+  },
   row_center:{
     flexDirection: 'row',
     alignItems:'center'
   }, 
   recordItem: {
+    gap:5,
     marginBottom: 10,
     padding: 10,
     backgroundColor: '#f1f1f1',
@@ -192,7 +216,7 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
       defaultImage:{
-        backgroundColor: '#c4c4c4',
+        backgroundColor: '#D0E3FF',
         width: 200,
         height: 200,
         borderRadius: 50,
