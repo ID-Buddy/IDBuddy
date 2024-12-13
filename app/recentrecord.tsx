@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { ActivityIndicator, View,Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { ActivityIndicator, View,Text, Pressable, StyleSheet, ScrollView, Platform } from 'react-native';
 import {Stack, useRouter} from 'expo-router';
 //Component
 import Empty from '@/components/RecordEmpty';
@@ -39,12 +39,14 @@ export default function recentRecordScreen() {
     <Stack.Screen
       options={{ 
         title : '오늘 하루 만남 기록',
-        
+        headerTitleAlign: 'center', // 제목을 가운데 정렬
         headerLeft: () => (
-          <Pressable onPress={goback} >
-            <Feather name="chevron-down" size={30} color="#4169e1" />
-          </Pressable>
-        ),
+          Platform.OS === "ios" ? (
+            <Pressable onPress={goback}>
+              <Feather name="chevron-down" size={30} color="#4169e1" />
+            </Pressable>
+          ) : null
+        ),        
         headerStyle:{
           backgroundColor: '#f2f2f2',
         },

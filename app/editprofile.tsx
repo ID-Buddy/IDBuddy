@@ -135,7 +135,7 @@ export default function editprofileScreen() {
   };
 
   const gotoProfileScreen = () => {
-      router.back();
+      router.navigate('/profile');
   };
   
   const handleSubmintInfo = () => {

@@ -15,6 +15,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 
 export default function RegisterScreen() {
   const registerUrl = process.env.EXPO_PUBLIC_API_REGISTER as string;
+  
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
   // 이미지 저장 함수
   async function saveImageToDisk(uri: string): Promise<string | null> {
@@ -169,9 +170,10 @@ export default function RegisterScreen() {
         setAdded(false);
         setSelected(false);
         setSendImages([]); 
-        router.back();
+        router.navigate('/people');
       } else {
-        alert(res.data || '얼굴을 알아볼 수 있는 사진으로 업로드해주세요!');
+        alert('얼굴을 알아볼 수 있는 사진으로 업로드해주세요!');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('업로드 오류:', error);
@@ -187,7 +189,7 @@ export default function RegisterScreen() {
     setAdded(false);
     setSelected(false);
     setSendImages([]);
-    router.back();
+    router.navigate('/people');
   };
 
   const handleDone= () => {
@@ -197,13 +199,19 @@ export default function RegisterScreen() {
   const handlefun = () =>{
     console.log('here!');
   };
+
+  const text = Platform.OS === "ios"
+    ? "(최대 3장)"
+    : null;
+
   return (
     <>
     <Stack.Screen 
       options={{ 
         title: '새로운 프로필' ,
+        headerTitleAlign: 'center', // 제목을 가운데 정렬
         headerLeft: () => (
-          <Pressable onPress={cancelRegister}>
+            <Pressable onPress={cancelRegister}>
             <Text style={styles.cancel}>취소</Text>
           </Pressable>
         ),
@@ -285,7 +293,7 @@ export default function RegisterScreen() {
             <Text style={styles.e_g_title}>얼굴 등록</Text>
             <View style={styles.e_g_content}>
               <Entypo name="info-with-circle" size={24} color="#4169e1" />
-              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!<Text style={styles.bold}>(최대 3장)</Text></Text>
+              <Text style={styles.text_content}>이목구비가 잘 보이는 사진을 골라주세요!<Text style={styles.bold}>{text}</Text></Text>
             </View>
             <View style={styles.e_g_img_container}>
               <View>

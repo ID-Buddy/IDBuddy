@@ -57,7 +57,7 @@ export default function RootLayout() {
               <Stack.Screen
                 name="recentrecord"
                 options={{
-                  presentation: 'modal',
+              
                 }}
               />
             <Stack.Screen name="+not-found" />

@@ -75,18 +75,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="test"
-        options={{
-          title: '',
-          headerTransparent: true,
-          tabBarLabel: 'Test',
-          tabBarActiveTintColor: '#4169e1',
-          tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons  name={focused ? "video-wireless" :"video-wireless-outline"} size={30}color={focused ? '#4169e1': 'lightgray'} />
-          ),
-        }}
-      />
       
     </Tabs>
   );

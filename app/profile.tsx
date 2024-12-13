@@ -1,5 +1,5 @@
 import React , {useEffect, useState}from 'react';
-import {View, Text, StyleSheet, Image, Pressable, Button, FlatList} from 'react-native';
+import {View, Text, StyleSheet, Image, Pressable, Platform, FlatList} from 'react-native';
 import { Profile } from '@/types/index';
 import {Stack, useLocalSearchParams, useRouter, Link} from 'expo-router';
 import { useDb } from '@/context/DbContext';
@@ -11,9 +11,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function profileScreen(){
     const router = useRouter();
-    const {deleteProfile, fetchProfileById} = useDb() as DbContextType;
+    //const {deleteProfile, fetchProfileById} = useDb() as DbContextType;
     const gotoPeopleScreen= () => {
-      router.back();
+      router.navigate('/people');
     }
     const params = useLocalSearchParams();
     const {id,image,name,relationship, memo, gender, age} = params  as {
@@ -61,7 +61,7 @@ export default function profileScreen(){
             headerLeft: () => (
               <Pressable onPress={gotoPeopleScreen} >
                 <Ionicons name="chevron-back" size={25} color="#4169e1" />
-              </Pressable>
+              </Pressable>          
             ),
             headerRight: () => (
               <Link 
@@ -78,51 +78,51 @@ export default function profileScreen(){
             headerShadowVisible: false,
         }}/> 
       <View style={styles.box}>
-      <View  style={styles.container}>
-      {image ? (
-        <Image 
-            source={{ uri: image }} 
-            style={styles.image} />
-        ) : (
-          <View style={styles.defaultImage}>
-            <Text style={styles.defaultText}numberOfLines={1} ellipsizeMode='tail'>{name}</Text>
-          </View>
-       )}
-       
-       <View style={styles.info_container}>
-        <View style={styles.row_center}>
-          <Text style={[styles.content, styles.name]}>{name}</Text>
-          <Text style={styles.content}>({age},{gender})</Text>
-        </View>
-        <Text style={[styles.content, styles.ref]}>{relationship}</Text>
-        <View style={styles.memo_container}>
-          <Text style={styles.memo_title}>메모</Text>
-          <Text style={styles.memo}>{memo}</Text>
-        </View>
-       </View>
-    </View>
-    <View style={styles.record_container}>
-        <Text style={styles.record_title}>최근 만남 일기</Text>
-        <Text style={styles.record_sub}>최근 작성한 10개의 일기를 볼 수 있습니다.</Text>
-        {records.length > 0 ? (
-          <FlatList
-            data={records}
-            keyExtractor={(item, index) => index.toString()} // 고유 키 생성
-            renderItem={({ item }) => (
-              <View style={styles.recordItem}>
-                <Text>Timestamp: {new Date(item.timestamp).toLocaleString()}</Text>
-                <Text>Detail:</Text>
-                <Text style={{backgroundColor:'white', borderRadius: 5,padding:5,}}>{item.detail ? item.detail : 'No details provided'}</Text>
+        <View  style={styles.container}>
+          {image ? (
+            <Image 
+                source={{ uri: image }} 
+                style={styles.image} />
+            ) : (
+              <View style={styles.defaultImage}>
+                <Text style={styles.defaultText}numberOfLines={1} ellipsizeMode='tail'>{name}</Text>
               </View>
-            )}
-          />
-        ) : (
-          <Text>아직 기록한 일기가 없습니다.</Text>
-        )}
+          )}
+          
+          <View style={styles.info_container}>
+            <View style={styles.row_center}>
+              <Text style={[styles.content, styles.name]}>{name}</Text>
+              <Text style={styles.content}>({age},{gender})</Text>
+            </View>
+            <Text style={[styles.content, styles.ref]}>{relationship}</Text>
+            <View style={styles.memo_container}>
+              <Text style={styles.memo_title}>메모</Text>
+              <Text style={styles.memo}>{memo}</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.record_container}>
+          <Text style={styles.record_title}>최근 만남 일기</Text>
+          <Text style={styles.record_sub}>최근 작성한 10개의 일기를 볼 수 있습니다.</Text>
+          {records.length > 0 ? (
+            <FlatList
+              data={records}
+              keyExtractor={(item, index) => index.toString()} // 고유 키 생성
+              renderItem={({ item }) => (
+                <View style={styles.recordItem}>
+                  <Text>Timestamp: {new Date(item.timestamp).toLocaleString()}</Text>
+                  <Text>Detail:</Text>
+                  <Text style={{backgroundColor:'white', borderRadius: 5,padding:5,}}>{item.detail}</Text>
+                </View>
+              )}
+            />
+          ) : (
+            <Text>아직 기록한 일기가 없습니다.</Text>
+          )}
+        </View>
       </View>
-    </View>
     </>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   record_title:{
+    backgroundColor:'#D0E3FF',
     alignSelf: 'flex-start',
     color : '#4169e1',
     fontSize: 25,
@@ -146,7 +147,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 13,
     borderTopRightRadius: 13,
     padding:20,
-    paddingTop: 35,
+    paddingTop: 20,
+    marginTop: 100
   },
   row_center:{
     flexDirection: 'row',
@@ -190,58 +192,58 @@ const styles = StyleSheet.create({
     lineHeight: 25,
   },
   container:{
-        flex: 1,
-        backgroundColor: '#f2f2f2',
-        borderRadius: 10,
-        padding: 13,
-        alignItems: 'center',
-      },
-      info_container:{
-        marginTop: -50,
-        paddingTop: 65,
-        backgroundColor: 'white',
-        width: '80%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 10,
-        paddingBottom: 25,
-        zIndex: 1,
-        shadowColor: '#a4a4a4',
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        shadowOffset: {
-          width: 0,
-          height: 3,
-        },
-        elevation: 3,
-      },
-      defaultImage:{
-        backgroundColor: '#D0E3FF',
-        width: 200,
-        height: 200,
-        borderRadius: 50,
-        marginBottom: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 2,
-      },
-      defaultText: {
-        fontSize: 60,
-        fontWeight: 'bold',
-      },
-      image: {
-        width: 200,
-        height: 200,
-        borderRadius: 50,
-        zIndex: 2,
-      },
-      content:{
-        fontSize: 15,
-        marginBottom : 8,
-      },
-      name:{
-        fontSize: 20,
-        fontWeight: 600,
-      }
+    flex: 1,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 10,
+    padding: 13,
+    alignItems: 'center',
+  },
+  info_container:{
+    marginTop: -65,
+    paddingTop: 70,
+    backgroundColor: 'white',
+    width: '90%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    paddingBottom: 25,
+    shadowColor: '#a4a4a4',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    elevation: 3,
+    zIndex: 1,
+  },
+  defaultImage:{
+    backgroundColor: '#D0E3FF',
+    width: 200,
+    height: 200,
+    borderRadius: 50,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  defaultText: {
+    fontSize: 60,
+    fontWeight: 'bold',
+  },
+  image: {
+    width: 200,
+    height: 200,
+    borderRadius: 50,
+    zIndex: 2,
+  },
+  content:{
+    fontSize: 15,
+    marginBottom : 8,
+  },
+  name:{
+    fontSize: 20,
+    fontWeight: 600,
+  }
 });
 

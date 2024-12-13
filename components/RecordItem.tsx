@@ -77,7 +77,7 @@ const RecordItem: React.FC<Record> = ({ id, timestamp, detail}) => {
 
   const navigateToProfile = () => {
     if(profile){
-      router.push({
+      router.navigate({
         pathname: "/profile",
         params: {
           id: profile?.id,
@@ -107,14 +107,14 @@ const RecordItem: React.FC<Record> = ({ id, timestamp, detail}) => {
             </View>
         
           )}
-           </TouchableOpacity>
-        <View style={styles.text_container}>
-          <View style={{flexDirection: 'row', flex:1}}>
-            <Text style={styles.recordText}><Text style={styles.bold}>{profile?.name}</Text></Text>
-            
-          </View>
-          <Text style={styles.recordText}>Timestamp: {new Date(timestamp).toLocaleString()}</Text>
-          <Text style={styles.recordText}>Detail: {detail ? detail : <Text style={{color: '#a4a4a4'}}>입력한 내용이 없음</Text>}</Text>
+      </TouchableOpacity>
+      <View style={styles.text_container}>
+        <Text style={styles.recordText}><Text style={styles.bold}>{profile?.name}</Text></Text>
+        <Text style={styles.recordText}>Timestamp: {new Date(timestamp).toLocaleString()}</Text>
+        <Text style={styles.recordText}>Detail: </Text>
+        <View style={styles.detail_container}>
+          <Text style={styles.recordText}>{detail ? detail : <Text style={{color: '#a4a4a4',}}>입력한 내용이 없음</Text>}</Text>
+        </View>
         </View>
         <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
           <Ionicons name="trash-sharp" size={30} color="red" />
@@ -151,6 +151,13 @@ const RecordItem: React.FC<Record> = ({ id, timestamp, detail}) => {
 };
 
 const styles = StyleSheet.create({
+  detail_container:{
+    flex:1,
+    borderRadius:13,
+    borderColor: '#4169e1',
+    borderWidth: 1,
+    padding: 10,
+  },
   submit_container:{
     alignItems:'flex-end'
   },
@@ -159,7 +166,7 @@ const styles = StyleSheet.create({
     fontSize:16,
   },
   text_container:{
-
+    flex:10,
   },
   profile_container:{
     flexDirection: 'row',
@@ -199,6 +206,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   recordText: {
+    lineHeight: 19, 
     fontSize: 14,
     marginBottom: 5,
   },

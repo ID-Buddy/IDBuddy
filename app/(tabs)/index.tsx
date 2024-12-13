@@ -24,9 +24,11 @@ import { DbContextType } from '@/types/index';
 
 export default function HomeScreen() {
   const [voiceOn, setVoiceOn] = useState<boolean>(true);
-  const {deleteRecordsBeforeMidnight, addRecord} = useDb() as DbContextType;
+  const {deleteRecordsBeforeMidnight, addRecord, fetchProfileById} = useDb() as DbContextType;
   const videoUrl = process.env.EXPO_PUBLIC_API_VIDEO as string;
+ 
   const serverUrl = process.env.EXPO_PUBLIC_API_SERVER  as string; 
+
   const [isLoading, setLoading] = useState<boolean>(true);
   const [isPressed, setPressed] = useState<boolean>(false); // pressed 상태 관리
 
@@ -183,33 +185,43 @@ export default function HomeScreen() {
   useEffect(() => {
     if (recognitionResult) {
       const idString= recognitionResult.id
-      const name = recognitionResult.name
-      const newRecord = {
-        id: parseInt(idString, 10), // idString을 숫자(십진수)로 변환하여 저장
-        timestamp: Date.now(),
-        detail: null,
-      };
-      const newResult = {
-        text: `${name}님이 인식되었습니다`,
-        timestamp: Date.now(), // 현재 시간 저장
-      };
-      // TTS 큐 추가
-      if (voiceOn){
-        addToTTSQueue(newResult.text);
-      }
-      // DisplayResults 추가
-      addToDisplayResults(newResult);
-      // 레코드 추가 (dbContext의 addRecord 함수 호출)
-      addRecord(newRecord);
+      if (recognitionResult.id){
+        const fetchProfile = async () => {
+          const result = await fetchProfileById(parseInt(idString,10));
+          if (result){
+            const name = result.name
+            const newRecord = {
+              id: parseInt(idString, 10), // idString을 숫자(십진수)로 변환하여 저장
+              timestamp: Date.now(),
+              detail: null,
+            };
+            const newResult = {
+              text: `${name}님이 인식되었습니다`,
+              timestamp: Date.now(), // 현재 시간 저장
+            };
+            // TTS 큐 추가
+            if (voiceOn){
+              addToTTSQueue(newResult.text);
+            }
+            // DisplayResults 추가
+            addToDisplayResults(newResult);
+            // 레코드 추가 (dbContext의 addRecord 함수 호출)
+            addRecord(newRecord);
+          }   
+        };
+        fetchProfile();
+      } else{
+        console.warn('Recent Record: ID is not provided')
+      }  
     }
   }, [recognitionResult]);
-
+  
   // 1초마다 displayResults에서 오래된 항목 제거
   useEffect(() => {
     const intervalId = setInterval(() => {
       const currentTime = Date.now();
       setDisplayResults((prevResults) =>
-        prevResults.filter((result) => currentTime - result.timestamp < 2 * 60 * 1000) // 2분 이내의 결과만 유지
+        prevResults.filter((result) => currentTime - result.timestamp < 30 * 1000) // 2분 이내의 결과만 유지
       );
     }, 1000); // 매 초 실행
   
@@ -232,15 +244,15 @@ export default function HomeScreen() {
 
 ///////////////////////////////////////
 /*테스트 용 함수 */
-/**
+/*
 useEffect(()=> {
   if(isPressed){
     const timer1 = setTimeout(() => {
-      setRecognitionResult({ id: '1733566820675', name: 'Jh' });
+      setRecognitionResult({ id: '1733918710201', name: 'Elon Musk' });
     }, 1000);
   
     const timer2 = setTimeout(() => {
-      setRecognitionResult({ id: '1733566981653', name: 'Kms' });
+      setRecognitionResult({ id: '1733918789837', name: 'khl' });
     }, 2000);
   
     // 정리 함수 반환
@@ -385,6 +397,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   mode_btn:{
+    zIndex: 1,
     flexDirection: 'row',
     gap: 16,
     width: '100%',
